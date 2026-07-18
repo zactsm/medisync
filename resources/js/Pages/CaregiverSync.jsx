@@ -82,7 +82,7 @@ export default function CaregiverSync({ user, patient, connectedCaregivers, shar
                             <span className="w-3 h-3 rounded-full bg-emerald-400 ring-4 ring-emerald-500/20"></span>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-3 text-center">
+                        <div className="grid grid-cols-1 gap-3 text-center sm:grid-cols-3">
                             <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
                                 <span className="text-[10px] text-slate-400 uppercase font-semibold">Ubat Pagi</span>
                                 <div className="text-sm font-bold text-emerald-400 mt-0.5">✔ Dimakan</div>

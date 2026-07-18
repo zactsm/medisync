@@ -19,7 +19,7 @@
   body {
     min-width: 320px;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: clip;
     color: var(--color-ink);
     background:
       radial-gradient(circle at 83% 6%, rgba(255, 199, 56, 0.18), transparent 30rem),
@@ -41,6 +41,9 @@
     outline: 3px solid rgba(255, 199, 56, 0.85);
     outline-offset: 3px;
   }
+
+  img, svg, video, canvas { max-width: 100%; }
+  input, select, textarea, button { max-width: 100%; }
 }
 
 .medisync-app {
@@ -202,6 +205,7 @@
   border-radius: 1.15rem;
   box-shadow: 0 18px 50px rgba(30, 30, 30, 0.14);
   backdrop-filter: blur(18px);
+  max-width: calc(100vw - 1rem);
 }
 
 .popover-kicker {
@@ -286,6 +290,7 @@
 }
 
 .premium-surface {
+  min-width: 0;
   padding-top: 0.25rem;
 }
 
@@ -875,6 +880,7 @@
 
 /* Shared light page system for every standard AppLayout route. */
 .standard-surface {
+  min-width: 0;
   padding: 1.4rem;
   color: var(--color-ink);
   background: rgba(255, 253, 248, 0.48);
@@ -883,6 +889,10 @@
   box-shadow: 0 18px 50px rgba(30, 30, 30, 0.07), inset 0 1px rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(16px);
 }
+
+.standard-surface > *,
+.standard-surface .grid > *,
+.standard-surface .flex > * { min-width: 0; }
 
 .standard-surface .glass-card {
   color: var(--color-ink);
@@ -1098,19 +1108,50 @@
   border-color: rgba(30, 30, 30, 0.12);
 }
 
-.premium-modal-backdrop { background: rgba(30, 30, 30, 0.34); }
+.premium-modal-backdrop {
+  background: rgba(30, 30, 30, 0.34);
+  -webkit-overflow-scrolling: touch;
+}
 .premium-modal {
+  max-height: calc(100dvh - 1rem);
+  min-height: 0;
+  padding: 1rem;
   color: var(--color-ink);
   background: rgba(255, 253, 248, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 24px 70px rgba(30, 30, 30, 0.22);
   backdrop-filter: blur(20px);
 }
-.premium-modal-header { border-bottom: 1px solid rgba(30, 30, 30, 0.1); }
+.premium-modal-header { flex-shrink: 0; border-bottom: 1px solid rgba(30, 30, 30, 0.1); }
 .premium-modal-title { color: var(--color-ink); }
 .premium-modal-close { color: rgba(30, 30, 30, 0.5); }
 .premium-modal-close:hover { color: var(--color-ink); background: rgba(30, 30, 30, 0.07); }
+.premium-modal-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.premium-modal-body form { min-width: 0; }
+.modal-actions {
+  position: sticky;
+  bottom: -1rem;
+  z-index: 1;
+  margin-inline: -0.25rem;
+  padding: 0.85rem 0.25rem 0.25rem;
+  background: linear-gradient(to bottom, rgba(255, 253, 248, 0.7), rgba(255, 253, 248, 0.99) 35%);
+}
+
+@media (max-width: 1023px) {
+  .standard-surface { padding: 1rem; }
+  .premium-modal { max-width: min(100%, 42rem); }
+}
 
 @media (max-width: 639px) {
-  .standard-surface { padding: 0.9rem; border-radius: 1.15rem; }
+  .standard-surface { padding: 0.75rem; border-radius: 1.15rem; }
+  .premium-modal { max-height: calc(100dvh - 0.5rem); margin-block: 0.25rem; padding: 0.85rem; border-radius: 1rem; }
+  .premium-modal-title { max-width: calc(100% - 2.5rem); font-size: 1rem; line-height: 1.25; }
+  .premium-modal-body { padding-block: 0.85rem; }
+  .modal-actions { flex-direction: column-reverse; align-items: stretch; gap: 0.5rem; }
+  .modal-actions button { width: 100%; min-height: 2.65rem; }
 }

@@ -210,7 +210,7 @@ export default function Medications({ user, medications: initialMedications, adh
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label className="block text-xs font-semibold text-slate-300 mb-1">Kategori Ubat</label>
                             <input
@@ -233,7 +233,7 @@ export default function Medications({ user, medications: initialMedications, adh
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label className="block text-xs font-semibold text-slate-300 mb-1">Waktu Makan</label>
                             <select
@@ -269,7 +269,7 @@ export default function Medications({ user, medications: initialMedications, adh
                         />
                     </div>
 
-                    <div className="pt-3 border-t border-slate-700 flex justify-end gap-3">
+                    <div className="modal-actions pt-3 border-t border-slate-700 flex justify-end gap-3">
                         <button
                             type="button"
                             onClick={() => setIsAddModalOpen(false)}
