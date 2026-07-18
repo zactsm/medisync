@@ -1,25 +1,22 @@
-import React, { useState } from 'react';
-import Sidebar from '../Components/Sidebar';
+import React from 'react';
 import Header from '../Components/Header';
 
-export default function AppLayout({ children, user }) {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+export default function AppLayout({ children, user, surface = 'premium' }) {
+    const surfaceClass = surface === 'dashboard' ? 'dashboard-surface' : 'standard-surface';
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 flex">
-            {/* Navigation Sidebar */}
-            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <div className="medisync-app min-h-screen text-ink">
+            <Header user={user} />
 
-            {/* Main Content Area */}
-            <div className="flex-1 md:pl-72 flex flex-col min-w-0">
-                <Header onMenuClick={() => setSidebarOpen(true)} user={user} />
-
-                <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
-                    {children}
+            <div className="mx-auto flex min-h-[calc(100vh-84px)] w-full max-w-[1540px] flex-col px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
+                <main className="flex-1 min-w-0">
+                    <div className={`page-surface premium-surface ${surfaceClass}`}>
+                        {children}
+                    </div>
                 </main>
 
-                <footer className="py-6 px-8 text-center text-xs text-slate-500 border-t border-slate-900">
-                    <p>© 2026 MediSync. Platform Pengurusan Kesihatan & Caregiver Keluarga.</p>
+                <footer className="pt-8 text-center text-xs text-ink/45">
+                    <p>© 2026 MediSync · Smarter health coordination for every family.</p>
                 </footer>
             </div>
         </div>

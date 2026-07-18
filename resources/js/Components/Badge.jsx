@@ -2,12 +2,12 @@ import React from 'react';
 
 export default function Badge({ children, variant = 'teal', className = '' }) {
     const variants = {
-        teal: 'bg-teal-500/10 text-teal-400 border-teal-500/30',
-        emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-        amber: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-        red: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-        indigo: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
-        gray: 'bg-slate-700/50 text-slate-300 border-slate-600/50',
+        teal: 'premium-badge premium-badge-accent',
+        emerald: 'premium-badge premium-badge-success',
+        amber: 'premium-badge premium-badge-warm',
+        red: 'premium-badge premium-badge-danger',
+        indigo: 'premium-badge premium-badge-neutral',
+        gray: 'premium-badge premium-badge-muted',
     };
 
     return (

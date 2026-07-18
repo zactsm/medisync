@@ -83,7 +83,35 @@ class MediSyncController extends Controller
                 'allergies' => ['Penicillin', 'Peanuts'],
                 'conditions' => ['Hypertension', 'Type 2 Diabetes', 'Previous Mild Stroke (2023)'],
                 'primaryICE' => 'Ahmad Azman (+6012-3456789)',
-            ]
+            ],
+            'dashboardSummary' => [
+                'metrics' => [
+                    ['key' => 'medicationAdherence', 'label' => 'Medication adherence', 'malayLabel' => 'Pematuhan ubat', 'value' => 92, 'suffix' => '%', 'tone' => 'charcoal'],
+                    ['key' => 'appointments', 'label' => 'Upcoming appointments', 'malayLabel' => 'Temujanji akan datang', 'value' => 2, 'suffix' => '', 'tone' => 'saffron'],
+                    ['key' => 'caregiverSync', 'label' => 'Caregiver sync', 'malayLabel' => 'Sync penjaga', 'value' => 100, 'suffix' => '%', 'tone' => 'striped'],
+                    ['key' => 'emergencyReadiness', 'label' => 'Emergency readiness', 'malayLabel' => 'Kesediaan kecemasan', 'value' => 100, 'suffix' => '%', 'tone' => 'outline'],
+                ],
+                'weeklyActivity' => [
+                    ['day' => 'Mon', 'value' => 42, 'label' => '2h 48m'],
+                    ['day' => 'Tue', 'value' => 56, 'label' => '3h 44m'],
+                    ['day' => 'Wed', 'value' => 34, 'label' => '2h 16m'],
+                    ['day' => 'Thu', 'value' => 64, 'label' => '4h 16m'],
+                    ['day' => 'Fri', 'value' => 82, 'label' => '5h 23m'],
+                    ['day' => 'Sat', 'value' => 26, 'label' => '1h 44m'],
+                    ['day' => 'Sun', 'value' => 38, 'label' => '2h 32m'],
+                ],
+                'calendar' => [
+                    ['id' => 'appointment-1', 'date' => '2026-07-24', 'time' => '10:30 AM', 'title' => 'Cardiology follow-up', 'malayTitle' => 'Susulan kardiologi', 'detail' => 'Hospital Kuala Lumpur (HKL)', 'tone' => 'charcoal'],
+                    ['id' => 'appointment-2', 'date' => '2026-08-05', 'time' => '2:15 PM', 'title' => 'Endocrinology review', 'malayTitle' => 'Semakan endokrinologi', 'detail' => 'Pusat Perubatan Universiti Malaya (PPUM)', 'tone' => 'saffron'],
+                ],
+                'checklist' => [
+                    ['id' => 'medication-plan', 'title' => 'Review medication plan', 'malayTitle' => 'Semak pelan ubat', 'completed' => true],
+                    ['id' => 'caregiver-sync', 'title' => 'Caregiver sync review', 'malayTitle' => 'Semak sync penjaga', 'completed' => true],
+                    ['id' => 'next-appointment', 'title' => 'Confirm next appointment', 'malayTitle' => 'Sahkan temujanji seterusnya', 'completed' => false],
+                    ['id' => 'emergency-contacts', 'title' => 'Update emergency contacts', 'malayTitle' => 'Kemas kini kontak kecemasan', 'completed' => false],
+                    ['id' => 'doctor-questions', 'title' => 'Prepare doctor questions', 'malayTitle' => 'Sediakan soalan doktor', 'completed' => false],
+                ],
+            ],
         ]);
     }
 

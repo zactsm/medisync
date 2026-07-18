@@ -1,75 +1,165 @@
 import React, { useState } from 'react';
-import { Link } from '@inertiajs/react';
-import { Menu, Bell, ShieldAlert, PhoneCall, UserCheck, ChevronDown } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import {
+    Bell,
+    ChevronDown,
+    FileText,
+    HeartPulse,
+    LayoutDashboard,
+    Menu,
+    Pill,
+    Settings,
+    ShieldAlert,
+    Stethoscope,
+    Users,
+    X,
+} from 'lucide-react';
 
-export default function Header({ onMenuClick, user }) {
-    const [viewMode, setViewMode] = useState('Patient');
+const navigation = [
+    { name: 'Dashboard', malay: 'Papan utama', href: '/', icon: LayoutDashboard },
+    { name: 'Medications', malay: 'Ubat', href: '/medications', icon: Pill },
+    { name: 'Appointments', malay: 'Temujanji', href: '/appointments', icon: Stethoscope },
+    { name: 'Caregiver', malay: 'Penjaga', href: '/caregiver', icon: Users },
+    { name: 'Documents', malay: 'Dokumen', href: '/documents', icon: FileText },
+    { name: 'Health tools', malay: 'Alat kesihatan', href: '/symptom-summariser', icon: HeartPulse },
+    { name: 'Emergency', malay: 'Kecemasan', href: '/ice', icon: ShieldAlert },
+];
+
+export default function Header({ user }) {
+    const { url } = usePage();
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
+    const [activePanel, setActivePanel] = useState(null);
+
+    const isActive = (href) => href === '/' ? url === '/' : url.startsWith(href);
+    const initials = (user?.name || 'MediSync')
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase();
+
+    const togglePanel = (panel) => setActivePanel((current) => current === panel ? null : panel);
 
     return (
-        <header className="sticky top-0 z-30 flex items-center justify-between h-20 px-4 md:px-8 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
-            {/* Mobile menu toggle button */}
-            <div className="flex items-center gap-4">
-                <button
-                    onClick={onMenuClick}
-                    className="p-2 text-slate-400 rounded-xl md:hidden hover:text-white hover:bg-slate-800 transition-colors"
-                >
-                    <Menu className="w-6 h-6" />
-                </button>
-
-                <div>
-                    <h2 className="text-lg font-bold text-slate-100 hidden sm:block">
-                        Selamat Datang, <span className="text-teal-400">{user?.name || 'Hajah Fatimah'}</span>
-                    </h2>
-                    <p className="text-xs text-slate-400 hidden sm:block">
-                        Kesihatan & Penjagaan Terkawal • Umur {user?.age || 64} tahun • Darah {user?.blood_type || 'O+'}
-                    </p>
-                </div>
-            </div>
-
-            {/* Right Quick Actions Header Bar */}
-            <div className="flex items-center gap-3">
-                {/* Caregiver Sync Switcher */}
-                <div className="hidden lg:flex items-center gap-2 p-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60">
-                    <button
-                        onClick={() => setViewMode('Patient')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            viewMode === 'Patient'
-                                ? 'bg-teal-500 text-slate-950 shadow-md font-bold'
-                                : 'text-slate-400 hover:text-white'
-                        }`}
-                    >
-                        <UserCheck className="w-3.5 h-3.5" />
-                        Mod Pesakit
-                    </button>
-                    <button
-                        onClick={() => setViewMode('Caregiver')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            viewMode === 'Caregiver'
-                                ? 'bg-indigo-500 text-white shadow-md font-bold'
-                                : 'text-slate-400 hover:text-white'
-                        }`}
-                    >
-                        <UserCheck className="w-3.5 h-3.5" />
-                        Mod Caregiver (Anak)
-                    </button>
-                </div>
-
-                {/* Notifications badge */}
-                <button className="relative p-2.5 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/60 transition-colors">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-teal-400 rounded-full ring-4 ring-slate-900"></span>
-                </button>
-
-                {/* One-Tap SOS Emergency Call */}
-                <Link
-                    href="/emergency-sos"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs tracking-wide shadow-lg shadow-rose-950/60 transition-all pulse-sos"
-                >
-                    <PhoneCall className="w-4 h-4 animate-bounce" />
-                    <span className="hidden sm:inline">SOS KECEMASAN</span>
-                    <span className="sm:hidden">SOS</span>
+        <header className="premium-header sticky top-0 z-40 border-b border-ink/8 bg-canvas/85 px-4 backdrop-blur-xl sm:px-6 lg:px-10">
+            <div className="mx-auto flex min-h-[84px] w-full max-w-[1540px] items-center gap-4">
+                <Link href="/" className="brand-mark shrink-0" aria-label="MediSync home">
+                    <span className="brand-icon"><HeartPulse className="h-4 w-4" /></span>
+                    <span className="brand-wordmark">Medi<span>Sync</span></span>
                 </Link>
+
+                <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 xl:flex" aria-label="Primary navigation">
+                    {navigation.map((item) => {
+                        const active = isActive(item.href);
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`nav-pill ${active ? 'nav-pill-active' : ''}`}
+                                aria-current={active ? 'page' : undefined}
+                            >
+                                <span>{item.name}</span>
+                                <small>{item.malay}</small>
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                <div className="ml-auto flex items-center gap-2">
+                    <div className="relative hidden sm:block">
+                        <button
+                            type="button"
+                            onClick={() => togglePanel('settings')}
+                            className="utility-button"
+                            aria-label="Open settings"
+                            aria-expanded={activePanel === 'settings'}
+                        >
+                            <Settings className="h-4 w-4" />
+                            <span className="hidden 2xl:inline">Settings</span>
+                        </button>
+                        {activePanel === 'settings' && (
+                            <div className="utility-popover right-0 w-64">
+                                <p className="popover-kicker">Preferences / Keutamaan</p>
+                                <div className="popover-row"><span>Premium canvas</span><span className="status-dot" /></div>
+                                <div className="popover-row"><span>Notifications</span><span className="text-xs text-ink/45">On</span></div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={() => togglePanel('notifications')}
+                            className="icon-button"
+                            aria-label="Open notifications"
+                            aria-expanded={activePanel === 'notifications'}
+                        >
+                            <Bell className="h-4 w-4" />
+                            <span className="notification-dot" />
+                        </button>
+                        {activePanel === 'notifications' && (
+                            <div className="utility-popover right-0 w-72">
+                                <p className="popover-kicker">Notifications / Pemberitahuan</p>
+                                <p className="text-sm font-semibold text-ink">Ahmad checked your medication log.</p>
+                                <p className="mt-1 text-xs leading-5 text-ink/55">Caregiver sync is active and your next appointment is confirmed.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={() => togglePanel('profile')}
+                            className="profile-button"
+                            aria-label="Open profile menu"
+                            aria-expanded={activePanel === 'profile'}
+                        >
+                            <span className="avatar avatar-small">{initials}</span>
+                            <ChevronDown className="hidden h-3.5 w-3.5 text-ink/50 sm:block" />
+                        </button>
+                        {activePanel === 'profile' && (
+                            <div className="utility-popover right-0 w-60">
+                                <p className="popover-kicker">Profile / Profil</p>
+                                <p className="text-sm font-semibold text-ink">{user?.name || 'MediSync patient'}</p>
+                                <p className="mt-1 text-xs text-ink/55">{user?.role || 'Patient'} · {user?.blood_type || 'O+'}</p>
+                                <Link href="/ice" className="popover-action mt-4">View emergency profile <span>→</span></Link>
+                            </div>
+                        )}
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() => setMobileNavOpen((open) => !open)}
+                        className="icon-button xl:hidden"
+                        aria-label={mobileNavOpen ? 'Close navigation' : 'Open navigation'}
+                        aria-expanded={mobileNavOpen}
+                    >
+                        {mobileNavOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                    </button>
+                </div>
             </div>
+
+            {mobileNavOpen && (
+                <nav className="mobile-nav xl:hidden" aria-label="Mobile navigation">
+                    {navigation.map((item) => {
+                        const active = isActive(item.href);
+                        const Icon = item.icon;
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={() => setMobileNavOpen(false)}
+                                className={`mobile-nav-link ${active ? 'mobile-nav-link-active' : ''}`}
+                            >
+                                <Icon className="h-4 w-4" />
+                                <span>{item.name}</span>
+                                <small>{item.malay}</small>
+                            </Link>
+                        );
+                    })}
+                </nav>
+            )}
         </header>
     );
 }
