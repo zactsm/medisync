@@ -156,7 +156,7 @@ export default function Header({ user }) {
                                 <p className="text-sm font-semibold text-ink">{user?.name || 'MediSync patient'}</p>
                                 <p className="mt-1 text-xs text-ink/55">{user?.role || 'Patient'} · {user?.blood_type || 'O+'}</p>
                                 <Link href="/ice" className="popover-action mt-4">View emergency profile <span>→</span></Link>
-                                <button type="button" onClick={async () => { await supabase.auth.signOut(); await fetch('/logout', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content } }); window.location.href = '/login'; }} className="mt-3 w-full rounded-lg border border-red-200 px-3 py-2 text-left text-xs font-bold text-red-600">Sign out</button>
+                                <button type="button" onClick={async () => { await supabase?.auth.signOut(); await fetch('/logout', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content } }); window.location.href = '/login'; }} className="mt-3 w-full rounded-lg border border-red-200 px-3 py-2 text-left text-xs font-bold text-red-600">Sign out</button>
                             </div>
                         )}
                     </div>

@@ -12,7 +12,7 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
         root.render(<App {...props} />);
-        supabase.auth.getSession().then(async ({ data }) => {
+        supabase?.auth.getSession().then(async ({ data }) => {
             if (data.session) await fetch('/auth/sync', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${data.session.access_token}`, 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content }, body: JSON.stringify({ access_token: data.session.access_token }) });
         });
     },
