@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MediSyncController;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -9,6 +10,10 @@ use App\Http\Controllers\MediSyncController;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/login', [AuthController::class, 'show'])->name('login');
+Route::post('/auth/sync', [AuthController::class, 'sync'])->name('auth.sync');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::middleware('auth')->group(function () {
 Route::get('/', [MediSyncController::class, 'dashboard'])->name('dashboard');
 Route::get('/medications', [MediSyncController::class, 'medications'])->name('medications');
 Route::get('/appointments', [MediSyncController::class, 'appointments'])->name('appointments');
@@ -18,6 +23,7 @@ Route::get('/caregiver', [MediSyncController::class, 'caregiverSync'])->name('ca
 Route::get('/symptom-summariser', [MediSyncController::class, 'symptomSummariser'])->name('symptomSummariser');
 Route::get('/emergency-sos', [MediSyncController::class, 'emergencySOS'])->name('emergencySOS');
 Route::get('/ice', [MediSyncController::class, 'emergencyICE'])->name('emergencyICE');
+});
 Route::get('/ice/public/{code}', [MediSyncController::class, 'publicICE'])->name('publicICE');
 
 use App\Http\Controllers\Api\MediSyncApiController;

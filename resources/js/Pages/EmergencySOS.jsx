@@ -60,7 +60,7 @@ export default function EmergencySOS({ user, emergencyContacts, nearbyHospitals 
                                         <p className="text-xs text-rose-200 font-semibold flex items-center justify-center gap-1">
                                             <CheckCircle2 className="w-4 h-4 text-emerald-400" /> SMS & Lokasi Dihantar Ke Caregiver
                                         </p>
-                                        <p className="text-[11px] text-slate-300">Ahmad Azman (+6012-3456789) telah menerima koordinat GPS anda.</p>
+                                        <p className="text-[11px] text-slate-300">{emergencyContacts?.find((contact) => contact.isPrimary)?.name || emergencyContacts?.[0]?.name || 'Primary caregiver'} ({emergencyContacts?.find((contact) => contact.isPrimary)?.phone || emergencyContacts?.[0]?.phone || '—'}) telah menerima koordinat GPS anda.</p>
                                     </div>
                                 ) : (
                                     <p className="text-xs text-rose-200 animate-pulse">Menghantar koordinat GPS & maklumat ICE...</p>

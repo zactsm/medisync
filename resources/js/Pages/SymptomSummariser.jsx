@@ -16,17 +16,10 @@ import {
 } from 'lucide-react';
 
 export default function SymptomSummariser({ user, commonSymptoms }) {
-    const [formData, setFormData] = useState({
-        primarySymptom: 'Sakit Dada Senak & Sesak Nafas',
-        onset: '3 hari lalu (Sejak Rabu)',
-        duration: 'Berlarutan 15-30 minit setiap kali',
-        severity: 6,
-        triggers: 'Selepas naik tangga atau jalan laju',
-        accompanying: 'Berpeluh dingin, rasa lenguh lengan kiri',
-        treatmentsTried: 'Rehat dan minum air suam (Tiada perubahan ketara)'
-    });
+    const [formData, setFormData] = useState({ primarySymptom: '', onset: '', duration: '', severity: 1, triggers: '', accompanying: '', treatmentsTried: '' });
 
     const [copied, setCopied] = useState(false);
+    const [saved, setSaved] = useState(false);
 
     const generatedSummary = `SKRIN PERUBATAN SEBELUM KONSULTASI (HISTORY TAKING SUMMARY):
 • Aduan Utama (Chief Complaint): ${formData.primarySymptom}
@@ -38,14 +31,17 @@ export default function SymptomSummariser({ user, commonSymptoms }) {
 • Kawalan Sendiri (Pre-treatments Tried): ${formData.treatmentsTried}
 
 SEJARAH PERUBATAN PESAKIT:
-• Pesakit: ${user?.name || 'Hajah Fatimah binti Ahmad'} (64 Tahun)
-• Masalah Kesihatan Sedia Ada: Darah Tinggi (Hypertension), Kencing Manis (Diabetes)
-• Alahan Ubat: PENICILLIN (Allergy Alert)`;
+• Pesakit: ${user?.name || '—'}`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(generatedSummary);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleSave = async () => {
+        const response = await fetch('/api/symptoms', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content }, body: JSON.stringify({ symptoms: formData.primarySymptom, onset: formData.onset, duration: formData.duration, severity: String(formData.severity), triggers: formData.triggers, other: `${formData.accompanying}; ${formData.treatmentsTried}` }) });
+        if (response.ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); }
     };
 
     return (
@@ -125,7 +121,7 @@ SEJARAH PERUBATAN PESAKIT:
                             max="10"
                             value={formData.severity}
                             onChange={e => setFormData({...formData, severity: parseInt(e.target.value)})}
-                            className="w-full accent-emerald-500 cursor-pointer"
+                            className="w-full accent-yellow-400 cursor-pointer"
                         />
                     </div>
 
@@ -188,6 +184,7 @@ SEJARAH PERUBATAN PESAKIT:
                             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                             {copied ? 'Ringkasan Berjaya Disalin!' : 'Salin Ringkasan Untuk Doktor'}
                         </button>
+                        <button onClick={handleSave} className="flex-1 py-3 rounded-xl border border-slate-700 text-slate-200 font-extrabold text-xs">{saved ? 'Disimpan!' : 'Simpan laporan'}</button>
                     </div>
                 </div>
             </div>

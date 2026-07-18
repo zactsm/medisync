@@ -37,7 +37,13 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+            'notifications' => fn () => $request->user()?->notifications()->latest()->limit(10)->get()->map(fn ($notification) => [
+                'id' => $notification->id,
+                'title' => data_get($notification->data, 'title', 'MediSync notification'),
+                'body' => data_get($notification->data, 'body', ''),
+                'read' => (bool) $notification->read_at,
+                'createdAt' => $notification->created_at?->diffForHumans(),
+            ])->values()->all() ?? [],
         ];
     }
 }

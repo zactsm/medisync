@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import { supabase } from '../lib/supabase';
 import {
     Bell,
     ChevronDown,
@@ -26,6 +27,8 @@ const navigation = [
 ];
 
 export default function Header({ user }) {
+    const { props } = usePage();
+    const notifications = props.notifications || [];
     const { url } = usePage();
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [activePanel, setActivePanel] = useState(null);
@@ -96,13 +99,12 @@ export default function Header({ user }) {
                             aria-expanded={activePanel === 'notifications'}
                         >
                             <Bell className="h-4 w-4" />
-                            <span className="notification-dot" />
+                            {notifications.some((item) => !item.read) && <span className="notification-dot" />}
                         </button>
                         {activePanel === 'notifications' && (
                             <div className="utility-popover right-0 w-72">
                                 <p className="popover-kicker">Notifications / Pemberitahuan</p>
-                                <p className="text-sm font-semibold text-ink">Ahmad checked your medication log.</p>
-                                <p className="mt-1 text-xs leading-5 text-ink/55">Caregiver sync is active and your next appointment is confirmed.</p>
+                                {notifications.length ? notifications.map((item) => <div key={item.id} className="border-b border-ink/10 py-2 last:border-0"><p className="text-sm font-semibold text-ink">{item.title}</p><p className="mt-1 text-xs leading-5 text-ink/55">{item.body}</p><p className="mt-1 text-[10px] text-ink/40">{item.createdAt}</p></div>) : <p className="text-sm text-ink/55">No notifications yet.</p>}
                             </div>
                         )}
                     </div>
@@ -124,6 +126,7 @@ export default function Header({ user }) {
                                 <p className="text-sm font-semibold text-ink">{user?.name || 'MediSync patient'}</p>
                                 <p className="mt-1 text-xs text-ink/55">{user?.role || 'Patient'} · {user?.blood_type || 'O+'}</p>
                                 <Link href="/ice" className="popover-action mt-4">View emergency profile <span>→</span></Link>
+                                <button type="button" onClick={async () => { await supabase.auth.signOut(); await fetch('/logout', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content } }); window.location.href = '/login'; }} className="mt-3 w-full rounded-lg border border-red-200 px-3 py-2 text-left text-xs font-bold text-red-600">Sign out</button>
                             </div>
                         )}
                     </div>

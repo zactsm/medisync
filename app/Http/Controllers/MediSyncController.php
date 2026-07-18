@@ -10,6 +10,7 @@ use App\Models\MedicalProfile;
 use App\Models\MedicalTerm;
 use App\Models\Medication;
 use App\Models\MedicationLog;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -19,7 +20,9 @@ class MediSyncController extends Controller
 {
     private function currentUser(): User
     {
-        return auth()->user() ?? User::query()->where('email', 'test@example.com')->firstOrFail();
+        $user = auth()->user();
+        abort_unless($user instanceof User, 401);
+        return $user;
     }
 
     private function userPayload(User $user): array
@@ -341,37 +344,10 @@ class MediSyncController extends Controller
         $user = $this->currentUser();
         $patient = $user->load('medicalProfile')->fresh();
         $caregivers = $user->caregivers()->get();
-        $latestMedication = MedicationLog::query()->whereIn('medication_id', $user->medications()->select('id'))->with('medication')->latest('taken_at')->first();
-        $sharedLog = collect();
-
-        if ($latestMedication) {
-            $sharedLog->push([
-                'id' => 'medication-'.$latestMedication->id,
-                'time' => $latestMedication->taken_at?->format('d M Y, h:i A'),
-                'actor' => $user->name,
-                'action' => 'Took medication: '.$latestMedication->medication?->name,
-                'type' => 'Medication',
-                'status' => 'Success',
-            ]);
-        }
-
-        $sharedLog = $sharedLog->merge($user->appointments()->latest('updated_at')->limit(2)->get()->map(fn (Appointment $appointment) => [
-            'id' => 'appointment-'.$appointment->id,
-            'time' => $appointment->updated_at?->format('d M Y, h:i A'),
-            'actor' => $user->name,
-            'action' => 'Appointment recorded: '.$appointment->title,
-            'type' => 'Appointment',
-            'status' => $appointment->status,
-        ]));
-
-        $sharedLog = $sharedLog->merge($user->documents()->latest()->limit(2)->get()->map(fn (MedicalDocument $document) => [
-            'id' => 'document-'.$document->id,
-            'time' => $document->created_at?->format('d M Y, h:i A'),
-            'actor' => $user->name,
-            'action' => 'Document stored: '.$document->title,
-            'type' => 'Document',
-            'status' => 'Uploaded',
-        ]))->values()->all();
+        $latestActivity = ActivityLog::where('user_id', $user->id)->latest()->first();
+        $sharedLog = ActivityLog::where('user_id', $user->id)->with('actor')->latest()->limit(10)->get()->map(fn (ActivityLog $log) => [
+            'id' => $log->id, 'time' => $log->created_at?->format('d M Y, h:i A'), 'actor' => $log->actor?->name ?? 'MediSync', 'action' => $log->action, 'type' => $log->subject_type ? class_basename($log->subject_type) : 'Activity', 'status' => 'Recorded',
+        ])->values()->all();
 
         return Inertia::render('CaregiverSync', [
             'user' => $this->userPayload($user),
@@ -380,7 +356,7 @@ class MediSyncController extends Controller
                 'age' => $patient->date_of_birth?->age,
                 'syncCode' => $patient->caregiver_sync_code,
                 'overallStatus' => $caregivers->isNotEmpty() ? 'Stable & Synced' : 'Awaiting connection',
-                'lastActivity' => $latestMedication ? 'Medication recorded at '.$latestMedication->taken_at?->format('h:i A') : 'No recent activity recorded',
+                'lastActivity' => $latestActivity?->action ?? 'No recent activity recorded',
             ],
             'connectedCaregivers' => $caregivers->map(fn (User $caregiver) => [
                 'id' => $caregiver->id,
