@@ -194,11 +194,11 @@ export default function Dashboard({ user, upcomingMeds = [], upcomingAppointment
                         <div className="card-header-row">
                             <div>
                                 <p className="section-label">Progress · Kemajuan</p>
-                                <h2 className="section-title mt-1">Weekly care activity</h2>
+                                <h2 className="section-title mt-1">Weekly medication activity</h2>
                             </div>
                             <button type="button" className="round-arrow" aria-label="Open care activity details"><ArrowUpRight className="h-4 w-4" /></button>
                         </div>
-                        <div className="chart-summary"><strong>{activePoint.label}</strong><span>Focus time on {activePoint.day}</span></div>
+                        <div className="chart-summary"><strong>{activePoint.label}</strong><span>Medication logs on {activePoint.day}</span></div>
                         <div className="bar-chart" role="img" aria-label="Interactive weekly care activity chart">
                             {summary.weeklyActivity.map((point, index) => (
                                 <div key={point.day} className={`bar-column ${activeChartPoint === index ? 'active' : ''}`}>

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'phone', 'role', 'blood_type', 'organ_donor', 'ice_code'])]
+#[Fillable(['name', 'email', 'password', 'phone', 'role', 'blood_type', 'organ_donor', 'ice_code', 'date_of_birth', 'caregiver_sync_code'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -22,8 +22,9 @@ class User extends Authenticatable
     public function documents() { return $this->hasMany(MedicalDocument::class); }
     public function medicalProfile() { return $this->hasOne(MedicalProfile::class); }
     public function symptomReports() { return $this->hasMany(SymptomReport::class); }
-    public function caregivers() { return $this->belongsToMany(self::class, 'caregiver_links', 'patient_id', 'caregiver_id')->wherePivot('status', 'accepted'); }
-    public function patients() { return $this->belongsToMany(self::class, 'caregiver_links', 'caregiver_id', 'patient_id')->wherePivot('status', 'accepted'); }
+    public function checklistItems() { return $this->hasMany(DashboardChecklistItem::class); }
+    public function caregivers() { return $this->belongsToMany(self::class, 'caregiver_links', 'patient_id', 'caregiver_id')->withPivot(['relationship', 'is_primary'])->withTimestamps()->wherePivot('status', 'accepted'); }
+    public function patients() { return $this->belongsToMany(self::class, 'caregiver_links', 'caregiver_id', 'patient_id')->withPivot(['relationship', 'is_primary'])->withTimestamps()->wherePivot('status', 'accepted'); }
 
     /**
      * Get the attributes that should be cast.
@@ -35,6 +36,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'date_of_birth' => 'date',
+            'organ_donor' => 'boolean',
         ];
     }
 }
