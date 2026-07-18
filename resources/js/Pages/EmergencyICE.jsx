@@ -20,10 +20,40 @@ export default function EmergencyICE({ user, patientICE }) {
     const [iceData, setIceData] = useState(patientICE);
     const [saved, setSaved] = useState(false);
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        try {
+            const response = await fetch('/api/medical-profile', {
+                method: 'PUT',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    blood_type: iceData.blood_type,
+                    organ_donor: iceData.organ_donor,
+                    weight_kg: parseInt(iceData.weight_kg) || null,
+                    height_cm: parseInt(iceData.height_cm) || null,
+                    conditions: iceData.chronic_conditions,
+                    allergies: iceData.allergies,
+                    emergency_contacts: iceData.iceContacts
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                alert('Ralat semasa mengemaskini profil: ' + (errData.message || response.statusText));
+                return;
+            }
+
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('Ralat sambungan rangkaian.');
+        }
     };
 
     return (
@@ -112,8 +142,8 @@ export default function EmergencyICE({ user, patientICE }) {
                         </h3>
 
                         <div>
-                            <label className="block text-xs font-semibold text-rose-400 mb-1 uppercase tracking-wide">
-                                ⚠️ Alahan Ubat & Makanan (Strict Warning)
+                            <label className="block text-xs font-semibold text-rose-400 mb-1 uppercase tracking-wide flex items-center gap-1.5">
+                                <AlertTriangle className="w-4 h-4 text-rose-400 animate-pulse" /> Alahan Ubat & Makanan (Strict Warning)
                             </label>
                             <div className="space-y-2">
                                 {iceData.allergies?.map((all, i) => (

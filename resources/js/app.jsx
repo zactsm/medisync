@@ -16,8 +16,5 @@ createInertiaApp({
             if (data.session) await fetch('/auth/sync', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${data.session.access_token}`, 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content }, body: JSON.stringify({ access_token: data.session.access_token }) });
         });
     },
-    progress: {
-        color: '#FFC738',
-        showSpinner: true,
-    },
+    progress: false,
 });

@@ -18,16 +18,76 @@ class MediSyncApiController extends Controller
     public function requestOtp(Request $r) { $data=$r->validate(['phone'=>['required','string','regex:/^\\+?[0-9]{8,15}$/']]); $code=(string)random_int(100000,999999); \DB::table('otp_codes')->where('phone',$data['phone'])->delete(); \DB::table('otp_codes')->insert(['phone'=>$data['phone'],'code_hash'=>Hash::make($code),'expires_at'=>now()->addMinutes(5),'created_at'=>now(),'updated_at'=>now()]); Log::info('MediSync OTP issued',['phone'=>$data['phone'],'code'=>$code]); return response()->json(['message'=>'OTP sent']); }
     public function verifyOtp(Request $r) { $d=$r->validate(['phone'=>'required|string','code'=>'required|digits:6','name'=>'nullable|string|max:120']); $otp=\DB::table('otp_codes')->where('phone',$d['phone'])->whereNull('used_at')->where('expires_at','>',now())->latest()->first(); abort_unless($otp && Hash::check($d['code'],$otp->code_hash),422,'Invalid or expired OTP'); \DB::table('otp_codes')->where('id',$otp->id)->update(['used_at'=>now()]); $u=User::firstOrCreate(['phone'=>$d['phone']],['name'=>$d['name']??'MediSync User','email'=>null,'password'=>Hash::make(Str::random(40)),'role'=>'patient','ice_code'=>'ICE-'.strtoupper(Str::random(8))]); $r->session()->regenerate(); auth()->login($u); return response()->json(['user'=>$u]); }
     public function medications(Request $r) { return $this->owner($r)->medications()->latest()->get(); }
-    public function storeMedication(Request $r) { $u=$this->owner($r); $d=$r->validate(['name'=>'required|string|max:120','category'=>'nullable|string|max:120','dosage'=>'required|string|max:80','instructions'=>'nullable|string|max:1000','frequency'=>'nullable|string|max:40','time'=>'nullable|date_format:H:i','pills_left'=>'nullable|integer|min:0','doctor'=>'nullable|string|max:120']); $item=$u->medications()->create($d); $this->record($u,'Medication added: '.$item->name,$item,$this->user($r)); Notification::create(['id'=>(string) Str::uuid(),'type'=>'medication','notifiable_type'=>User::class,'notifiable_id'=>$u->id,'data'=>['title'=>'Medication added','body'=>$item->name.' was added to your medication list.']]); return $item; }
+    public function storeMedication(Request $r) {
+        $u=$this->owner($r);
+        if ($r->has('pillsLeft') && !$r->has('pills_left')) {
+            $r->merge(['pills_left' => $r->input('pillsLeft')]);
+        }
+        if ($r->has('time') && $r->input('time')) {
+            try {
+                $time = \Carbon\Carbon::parse($r->input('time'))->format('H:i');
+                $r->merge(['time' => $time]);
+            } catch (\Throwable $e) {}
+        }
+        $d=$r->validate(['name'=>'required|string|max:120','category'=>'nullable|string|max:120','dosage'=>'required|string|max:80','instructions'=>'nullable|string|max:1000','frequency'=>'nullable|string|max:40','time'=>'nullable|date_format:H:i','pills_left'=>'nullable|integer|min:0','doctor'=>'nullable|string|max:120']);
+        $item=$u->medications()->create($d);
+        $this->record($u,'Medication added: '.$item->name,$item,$this->user($r));
+        Notification::create(['id'=>(string) Str::uuid(),'type'=>'medication','notifiable_type'=>User::class,'notifiable_id'=>$u->id,'data'=>['title'=>'Medication added','body'=>$item->name.' was added to your medication list.']]);
+        return $item;
+    }
     public function logMedication(Request $r, Medication $medication) { abort_unless($medication->user_id===$this->owner($r)->id,404); $d=$r->validate(['taken_on'=>'nullable|date']); return $medication->logs()->updateOrCreate(['taken_on'=>$d['taken_on']??today()],['taken_at'=>now(),'recorded_by'=>$this->user($r)->id]); }
     public function appointments(Request $r) { return $this->owner($r)->appointments()->orderBy('starts_at')->get(); }
-    public function storeAppointment(Request $r) { $u=$this->owner($r); $d=$r->validate(['title'=>'required|string|max:160','doctor'=>'nullable|string|max:120','hospital'=>'required|string|max:160','address'=>'nullable|string|max:500','department'=>'nullable|string|max:160','starts_at'=>'required|date','notes'=>'nullable|string|max:2000','documents_needed'=>'nullable|array']); $item=$u->appointments()->create($d); $this->record($u,'Appointment added: '.$item->title,$item,$this->user($r)); Notification::create(['id'=>(string) Str::uuid(),'type'=>'appointment','notifiable_type'=>User::class,'notifiable_id'=>$u->id,'data'=>['title'=>'Appointment added','body'=>$item->title.' has been saved.']]); return $item; }
+    public function storeAppointment(Request $r) {
+        $u=$this->owner($r);
+        if ($r->has('starts_at') && $r->input('starts_at')) {
+            try {
+                $startsAt = \Carbon\Carbon::parse($r->input('starts_at'))->toDateTimeString();
+                $r->merge(['starts_at' => $startsAt]);
+            } catch (\Throwable $e) {}
+        }
+        $d=$r->validate(['title'=>'required|string|max:160','doctor'=>'nullable|string|max:120','hospital'=>'required|string|max:160','address'=>'nullable|string|max:500','department'=>'nullable|string|max:160','starts_at'=>'required|date','notes'=>'nullable|string|max:2000','documents_needed'=>'nullable|array']);
+        $item=$u->appointments()->create($d);
+        $this->record($u,'Appointment added: '.$item->title,$item,$this->user($r));
+        Notification::create(['id'=>(string) Str::uuid(),'type'=>'appointment','notifiable_type'=>User::class,'notifiable_id'=>$u->id,'data'=>['title'=>'Appointment added','body'=>$item->title.' has been saved.']]);
+        return $item;
+    }
     public function profile(Request $r) { return $this->owner($r)->medicalProfile()->firstOrCreate([]); }
-    public function updateProfile(Request $r) { $d=$r->validate(['blood_type'=>'nullable|string|max:10','organ_donor'=>'boolean','weight_kg'=>'nullable|integer|min:1|max:500','height_cm'=>'nullable|integer|min:30|max:250','conditions'=>'nullable|array','allergies'=>'nullable|array','emergency_contacts'=>'nullable|array']); $u=$this->owner($r); $u->update(array_intersect_key($d,array_flip(['blood_type','organ_donor']))); return $u->medicalProfile()->updateOrCreate([],array_diff_key($d,array_flip(['blood_type','organ_donor']))); }
+    public function updateProfile(Request $r) {
+        $d=$r->validate(['blood_type'=>'nullable|string|max:10','organ_donor'=>'boolean','weight_kg'=>'nullable|integer|min:1|max:500','height_cm'=>'nullable|integer|min:30|max:250','conditions'=>'nullable|array','allergies'=>'nullable|array','emergency_contacts'=>'nullable|array']);
+        $u=$this->owner($r);
+        $u->update(array_intersect_key($d,array_flip(['blood_type','organ_donor'])));
+        return $u->medicalProfile()->updateOrCreate([],array_diff_key($d,array_flip(['blood_type','organ_donor'])));
+    }
     public function storeSymptom(Request $r) { $d=$r->validate(['symptoms'=>'required|string|max:1000','onset'=>'nullable|string|max:200','duration'=>'nullable|string|max:200','severity'=>'nullable|string|max:40','triggers'=>'nullable|string|max:500','other'=>'nullable|string|max:1000']); $summary=collect($d)->filter()->map(fn($v,$k)=>ucfirst(str_replace('_',' ',$k)).': '.$v)->implode('. ').'.'; return $this->owner($r)->symptomReports()->create(['inputs'=>$d,'summary'=>$summary]); }
     public function inviteCaregiver(Request $r) { $d=$r->validate(['phone'=>'required|string','patient_id'=>'nullable|integer']); $patient=$this->owner($r); $caregiver=User::where('phone',$d['phone'])->firstOrFail(); abort_if($caregiver->id===$patient->id,422,'Cannot link the same account'); return CaregiverLink::updateOrCreate(['patient_id'=>$patient->id,'caregiver_id'=>$caregiver->id],['status'=>'pending']); }
     public function respondCaregiver(Request $r, CaregiverLink $link) { abort_unless($link->caregiver_id===$this->user($r)->id,403); $d=$r->validate(['status'=>[Rule::in(['accepted','rejected'])]]); $link->update(['status'=>$d['status']]); return $link; }
     public function documents(Request $r) { return $this->owner($r)->documents()->latest()->get(); }
-    public function uploadDocument(Request $r) { $d=$r->validate(['title'=>'required|string|max:160','category'=>'required|string|max:60','file'=>'required|file|max:10240|mimes:pdf,jpg,jpeg,png,webp']); $file=$d['file']; $path=$file->store('medical-documents/'.$this->owner($r)->id,'supabase'); return $this->owner($r)->documents()->create(['title'=>$d['title'],'category'=>$d['category'],'path'=>$path,'mime_type'=>$file->getMimeType(),'size'=>$file->getSize(),'disk'=>'supabase']); }
+    public function uploadDocument(Request $r) {
+        $d=$r->validate(['title'=>'required|string|max:160','category'=>'required|string|max:60','file'=>'required|file|max:10240|mimes:pdf,jpg,jpeg,png,webp']);
+        $file=$d['file'];
+        $disk = 'local';
+        try {
+            if (config('filesystems.disks.supabase.key') && config('filesystems.disks.supabase.bucket')) {
+                $path=$file->store('medical-documents/'.$this->owner($r)->id,'supabase');
+                $disk = 'supabase';
+            } else {
+                $path=$file->store('medical-documents/'.$this->owner($r)->id,'local');
+            }
+        } catch (\Throwable $e) {
+            $path=$file->store('medical-documents/'.$this->owner($r)->id,'local');
+            $disk = 'local';
+        }
+        return $this->owner($r)->documents()->create(['title'=>$d['title'],'category'=>$d['category'],'path'=>$path,'mime_type'=>$file->getMimeType(),'size'=>$file->getSize(),'disk'=>$disk]);
+    }
+    public function destroyMedication(Request $r, Medication $medication) {
+        abort_unless($medication->user_id===$this->owner($r)->id, 404);
+        $medication->delete();
+        return response()->json(['success'=>true]);
+    }
+    public function destroyAppointment(Request $r, Appointment $appointment) {
+        abort_unless($appointment->user_id===$this->owner($r)->id, 404);
+        $appointment->delete();
+        return response()->json(['success'=>true]);
+    }
     public function publicIce(string $code) { $u=User::where('ice_code',$code)->firstOrFail(); $p=$u->medicalProfile; return response()->json(['name'=>$u->name,'blood_type'=>$u->blood_type,'organ_donor'=>$u->organ_donor,'conditions'=>$p?->conditions,'allergies'=>$p?->allergies,'emergency_contacts'=>$p?->emergency_contacts,'medications'=>$u->medications()->where('active',true)->get(['name','dosage','purpose'])]); }
 }

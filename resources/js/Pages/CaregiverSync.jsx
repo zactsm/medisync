@@ -15,7 +15,8 @@ import {
     Plus,
     Clock,
     PhoneCall,
-    Bell
+    Bell,
+    Moon
 } from 'lucide-react';
 
 export default function CaregiverSync({ user, patient, connectedCaregivers, sharedLog }) {
@@ -69,7 +70,7 @@ export default function CaregiverSync({ user, patient, connectedCaregivers, shar
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-white flex items-center gap-2">
                                 <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
-                                Status Kesihatan Pesakit (Ibu/Bapa)
+                                Status Kesihatan Pesakit
                             </h3>
                             <Badge variant="emerald">Live Synced</Badge>
                         </div>
@@ -85,15 +86,21 @@ export default function CaregiverSync({ user, patient, connectedCaregivers, shar
                         <div className="grid grid-cols-1 gap-3 text-center sm:grid-cols-3">
                             <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
                                 <span className="text-[10px] text-slate-400 uppercase font-semibold">Ubat Pagi</span>
-                                <div className="text-sm font-bold text-emerald-400 mt-0.5">✔ Dimakan</div>
+                                <div className="text-sm font-bold text-emerald-400 mt-0.5 flex items-center justify-center gap-1.5">
+                                    <Check className="w-4 h-4 text-emerald-400" /> Dimakan
+                                </div>
                             </div>
                             <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
                                 <span className="text-[10px] text-slate-400 uppercase font-semibold">Ubat Tengahari</span>
-                                <div className="text-sm font-bold text-amber-400 mt-0.5">⏳ Menunggu</div>
+                                <div className="text-sm font-bold text-amber-400 mt-0.5 flex items-center justify-center gap-1.5">
+                                    <Clock className="w-4 h-4 text-amber-400" /> Menunggu
+                                </div>
                             </div>
                             <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
                                 <span className="text-[10px] text-slate-400 uppercase font-semibold">Ubat Malam</span>
-                                <div className="text-sm font-bold text-slate-400 mt-0.5">🌙 9:00 PM</div>
+                                <div className="text-sm font-bold text-slate-300 mt-0.5 flex items-center justify-center gap-1.5">
+                                    <Moon className="w-4 h-4 text-indigo-400" /> 9:00 PM
+                                </div>
                             </div>
                         </div>
                     </div>

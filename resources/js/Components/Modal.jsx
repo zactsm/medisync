@@ -70,7 +70,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                         ref={closeButtonRef}
                         type="button"
                         onClick={() => onCloseRef.current()}
-                        className="premium-modal-close p-1.5 rounded-lg transition-colors"
+                        className="premium-modal-close p-1.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500"
                         aria-label="Close dialog"
                     >
                         <X className="w-5 h-5" />

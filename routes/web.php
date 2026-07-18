@@ -44,8 +44,10 @@ Route::prefix('api')->group(function () {
         Route::get('/medications', [MediSyncApiController::class, 'medications']);
         Route::post('/medications', [MediSyncApiController::class, 'storeMedication']);
         Route::post('/medications/{medication}/log', [MediSyncApiController::class, 'logMedication']);
+        Route::delete('/medications/{medication}', [MediSyncApiController::class, 'destroyMedication']);
         Route::get('/appointments', [MediSyncApiController::class, 'appointments']);
         Route::post('/appointments', [MediSyncApiController::class, 'storeAppointment']);
+        Route::delete('/appointments/{appointment}', [MediSyncApiController::class, 'destroyAppointment']);
         Route::get('/medical-profile', [MediSyncApiController::class, 'profile']);
         Route::put('/medical-profile', [MediSyncApiController::class, 'updateProfile']);
         Route::post('/symptoms', [MediSyncApiController::class, 'storeSymptom']);

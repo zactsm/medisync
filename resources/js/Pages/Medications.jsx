@@ -14,13 +14,18 @@ import {
     RotateCcw,
     Sparkles,
     UserCheck,
-    Check
+    Check,
+    Sun,
+    Moon,
+    Info,
+    Trash2
 } from 'lucide-react';
 
 export default function Medications({ user, medications: initialMedications, adherenceRate, streakDays }) {
     const [meds, setMeds] = useState(initialMedications);
     const [filterTime, setFilterTime] = useState('All');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [newMed, setNewMed] = useState({
         name: '',
         category: 'Blood Pressure',
@@ -40,21 +45,55 @@ export default function Medications({ user, medications: initialMedications, adh
 
     const handleAddMedication = async (e) => {
         e.preventDefault();
-        if (!newMed.name) return;
-        const response = await fetch('/api/medications', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content, 'Accept': 'application/json' }, body: JSON.stringify({ ...newMed, time: newMed.time }) });
-        if (!response.ok) return;
-        const created = await response.json();
-        setMeds([created, ...meds]);
-        setIsAddModalOpen(false);
-        setNewMed({
-            name: '',
-            category: 'Blood Pressure',
-            dosage: '10mg',
-            instructions: 'Take after meal',
-            timeOfDay: 'Morning',
-            time: '08:00 AM',
-            pillsLeft: 30
-        });
+        if (!newMed.name || submitting) return;
+        setSubmitting(true);
+        try {
+            const response = await fetch('/api/medications', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content, 'Accept': 'application/json' }, body: JSON.stringify({ ...newMed, time: newMed.time }) });
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                alert('Gagal menambah ubat: ' + (errData.message || 'Sila semak input anda.'));
+                return;
+            }
+            const created = await response.json();
+            setMeds([created, ...meds]);
+            setIsAddModalOpen(false);
+            setNewMed({
+                name: '',
+                category: 'Blood Pressure',
+                dosage: '10mg',
+                instructions: 'Take after meal',
+                timeOfDay: 'Morning',
+                time: '08:00 AM',
+                pillsLeft: 30
+            });
+        } catch (error) {
+            console.error('Network error adding medication:', error);
+            alert('Ralat sambungan rangkaian semasa menambah rekod ubat.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleDeleteMedication = async (id) => {
+        if (!confirm('Adakah anda pasti mahu memadam ubat ini? / Are you sure you want to delete this medication?')) return;
+        try {
+            const response = await fetch(`/api/medications/${id}`, {
+                method: 'DELETE',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                    'Accept': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                alert('Gagal memadam rekod ubat.');
+                return;
+            }
+            setMeds(prev => prev.filter(m => m.id !== id));
+        } catch (error) {
+            console.error('Error deleting medication:', error);
+            alert('Ralat sambungan rangkaian semasa memadam rekod ubat.');
+        }
     };
 
     return (
@@ -128,7 +167,15 @@ export default function Medications({ user, medications: initialMedications, adh
                                 : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-700/60'
                         }`}
                     >
-                        {t === 'All' ? 'Semua Waktu' : t === 'Morning' ? '🌅 Pagi' : t === 'Afternoon' ? '☀️ Tengahari' : '🌙 Malam'}
+                        {t === 'All' ? (
+                            'Semua Waktu'
+                        ) : t === 'Morning' ? (
+                            <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> Pagi</span>
+                        ) : t === 'Afternoon' ? (
+                            <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> Tengahari</span>
+                        ) : (
+                            <span className="flex items-center gap-1.5"><Moon className="w-3.5 h-3.5 text-indigo-400" /> Malam</span>
+                        )}
                     </button>
                 ))}
             </div>
@@ -145,26 +192,41 @@ export default function Medications({ user, medications: initialMedications, adh
                         }`}
                     >
                         <div>
-                            <div className="flex items-start justify-between gap-3 mb-3">
+                             <div className="flex items-start justify-between gap-3 mb-3">
                                 <div>
                                     <Badge variant={med.takenToday ? 'emerald' : 'teal'}>{med.category}</Badge>
                                     <h3 className="text-lg font-bold text-white mt-1.5">{med.name}</h3>
                                     <p className="text-xs font-mono text-teal-300">Dos: {med.dosage}</p>
                                 </div>
-                                <span className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 font-semibold">
-                                    {med.time}
-                                </span>
+                                <div className="flex flex-col items-end gap-2 shrink-0">
+                                    <span className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 font-semibold">
+                                        {med.time}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDeleteMedication(med.id)}
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-slate-700/60 hover:border-rose-500/20 transition-all transition-colors cursor-pointer"
+                                        title="Padam Rekod Ubat"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
                             </div>
 
-                            <p className="text-xs text-slate-300 mb-4 bg-slate-800/50 p-3 rounded-xl border border-slate-700/40">
-                                💡 <strong className="text-slate-200">Arahan:</strong> {med.instructions}
+                            <p className="text-xs text-slate-300 mb-4 bg-slate-800/50 p-3 rounded-xl border border-slate-700/40 flex items-start gap-2">
+                                <Info className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                                <span><strong className="text-slate-200">Arahan:</strong> {med.instructions}</span>
                             </p>
 
                             {/* Pill Supply Status */}
                             <div className="flex items-center justify-between text-xs mb-4">
                                 <span className="text-slate-400">Baki Ubat Dalam Botol:</span>
-                                <span className={`font-bold font-mono ${med.pillsLeft <= med.refillThreshold ? 'text-rose-400' : 'text-slate-200'}`}>
-                                    {med.pillsLeft} biji {med.pillsLeft <= med.refillThreshold && '⚠️ (Perlu Preskripsi Semula)'}
+                                <span className={`font-bold font-mono flex items-center gap-1 ${med.pillsLeft <= med.refillThreshold ? 'text-rose-400' : 'text-slate-200'}`}>
+                                    {med.pillsLeft} biji {med.pillsLeft <= med.refillThreshold && (
+                                        <span className="flex items-center gap-1 text-[11px] font-bold text-rose-400 ml-1">
+                                            <AlertTriangle className="w-3.5 h-3.5" /> (Perlu Re-preskripsi)
+                                        </span>
+                                    )}
                                 </span>
                             </div>
                         </div>
@@ -241,9 +303,9 @@ export default function Medications({ user, medications: initialMedications, adh
                                 onChange={e => setNewMed({...newMed, timeOfDay: e.target.value})}
                                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-teal-400"
                             >
-                                <option value="Morning">🌅 Pagi</option>
-                                <option value="Afternoon">☀️ Tengahari</option>
-                                <option value="Night">🌙 Malam</option>
+                                <option value="Morning">Pagi</option>
+                                <option value="Afternoon">Tengahari</option>
+                                <option value="Night">Malam</option>
                             </select>
                         </div>
                         <div>
@@ -277,11 +339,12 @@ export default function Medications({ user, medications: initialMedications, adh
                         >
                             Batal
                         </button>
-                        <button
+                         <button
                             type="submit"
-                            className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs shadow-md"
+                            disabled={submitting}
+                            className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 disabled:bg-teal-500/50 disabled:text-slate-700 text-slate-950 font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5"
                         >
-                            Simpan Rekod Ubat
+                            {submitting ? 'Menyimpan...' : 'Simpan Rekod Ubat'}
                         </button>
                     </div>
                 </form>

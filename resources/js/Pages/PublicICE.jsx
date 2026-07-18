@@ -81,7 +81,7 @@ export default function PublicICE({ code, emergencyData }) {
                     <div className="space-y-2">
                         {emergencyData.severeAllergies?.map((all, i) => (
                             <div key={i} className="p-3 rounded-xl bg-rose-950/60 border border-rose-500 text-xs font-extrabold text-rose-200 flex items-center gap-2">
-                                <span className="text-rose-400">⚠️</span> {all}
+                                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" /> {all}
                             </div>
                         ))}
                     </div>

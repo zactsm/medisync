@@ -16,9 +16,9 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        User::factory()->create(['email' => 'test@example.com']);
+        $user = User::factory()->create(['email' => 'test@example.com']);
 
-        $response = $this->get('/');
+        $response = $this->actingAs($user)->get('/');
 
         $response->assertStatus(200);
     }

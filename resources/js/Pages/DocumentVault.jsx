@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Head } from '@inertiajs/react';
 import AppLayout from '../Layouts/AppLayout';
 import Badge from '../Components/Badge';
@@ -27,6 +27,9 @@ export default function DocumentVault({ user, documents: initialDocuments }) {
         category: 'Insurance',
         notes: ''
     });
+    const fileInputRef = useRef(null);
+    const [file, setFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
     const categories = ['All', 'Insurance', 'Lab Results', 'Discharge Summary', 'Prescription'];
 
@@ -37,22 +40,59 @@ export default function DocumentVault({ user, documents: initialDocuments }) {
         return matchesCategory && matchesSearch;
     });
 
-    const handleUpload = (e) => {
+    const handleUpload = async (e) => {
         e.preventDefault();
-        if (!newDoc.title) return;
-        const created = {
-            id: Date.now(),
-            title: newDoc.title,
-            category: newDoc.category,
-            type: 'PDF Document',
-            uploadedDate: 'Hari Ini',
-            size: '1.4 MB',
-            tags: [newDoc.category, 'MediSync Vault'],
-            notes: newDoc.notes || 'Dokumen dimuat naik ke storan terjamin.'
-        };
-        setDocs([created, ...docs]);
-        setIsUploadModalOpen(false);
-        setNewDoc({ title: '', category: 'Insurance', notes: '' });
+        if (!newDoc.title || !file) {
+            alert('Sila isi tajuk dan pilih fail / Please fill in title and select a file.');
+            return;
+        }
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('title', newDoc.title);
+            formData.append('category', newDoc.category);
+            formData.append('file', file);
+            formData.append('notes', newDoc.notes);
+
+            const response = await fetch('/api/documents', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                alert('Gagal muat naik: ' + (errData.message || response.statusText));
+                return;
+            }
+
+            const created = await response.json();
+            const docPayload = {
+                id: created.id,
+                title: created.title,
+                category: created.category,
+                type: created.mime_type || 'PDF Document',
+                uploadedDate: 'Hari Ini',
+                size: (created.size ? (created.size / (1024 * 1024)).toFixed(1) + ' MB' : '1.2 MB'),
+                tags: [created.category, 'MediSync Vault'],
+                notes: created.notes || 'Dokumen dimuat naik ke storan terjamin.',
+                path: created.path,
+            };
+
+            setDocs([docPayload, ...docs]);
+            setIsUploadModalOpen(false);
+            setNewDoc({ title: '', category: 'Insurance', notes: '' });
+            setFile(null);
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            alert('Ralat semasa memuat naik fail.');
+        } finally {
+            setUploading(false);
+        }
     };
 
     return (
@@ -237,10 +277,26 @@ export default function DocumentVault({ user, documents: initialDocuments }) {
 
                     <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-1">Pilih Fail (PDF / Imej)</label>
-                        <div className="border-2 border-dashed border-slate-700 hover:border-teal-400 rounded-xl p-6 text-center cursor-pointer transition-colors bg-slate-800/40">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={(e) => setFile(e.target.files[0])}
+                            className="hidden"
+                            accept=".pdf,.jpg,.jpeg,.png,.webp"
+                        />
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-slate-700 hover:border-teal-400 rounded-xl p-6 text-center cursor-pointer transition-colors bg-slate-800/40"
+                        >
                             <Upload className="w-8 h-8 text-teal-400 mx-auto mb-2" />
-                            <p className="text-xs font-bold text-slate-200">Klik untuk pilih fail atau seret ke sini</p>
-                            <p className="text-[10px] text-slate-400 mt-0.5">Sokongan PDF, PNG, JPG sehingga 25MB</p>
+                            {file ? (
+                                <p className="text-xs font-bold text-teal-400">{file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB)</p>
+                            ) : (
+                                <>
+                                    <p className="text-xs font-bold text-slate-200">Klik untuk pilih fail atau seret ke sini</p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">Sokongan PDF, PNG, JPG, WEBP sehingga 10MB</p>
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -265,9 +321,10 @@ export default function DocumentVault({ user, documents: initialDocuments }) {
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs shadow-md"
+                            disabled={uploading}
+                            className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 disabled:bg-teal-500/50 disabled:text-slate-700 text-slate-950 font-extrabold text-xs shadow-md"
                         >
-                            Muat Naik Ke Vault
+                            {uploading ? 'Memuat naik...' : 'Muat Naik Ke Vault'}
                         </button>
                     </div>
                 </form>

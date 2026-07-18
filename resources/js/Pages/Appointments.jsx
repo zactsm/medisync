@@ -13,12 +13,14 @@ import {
     ExternalLink,
     AlertCircle,
     Building2,
-    Search
+    Search,
+    Trash2
 } from 'lucide-react';
 
 export default function Appointments({ user, appointments: initialAppointments }) {
     const [appts, setAppts] = useState(initialAppointments);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [newAppt, setNewAppt] = useState({
         title: '',
         doctor: '',
@@ -31,21 +33,55 @@ export default function Appointments({ user, appointments: initialAppointments }
 
     const handleAddAppointment = async (e) => {
         e.preventDefault();
-        if (!newAppt.doctor || !newAppt.date) return;
-        const response = await fetch('/api/appointments', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content, 'Accept': 'application/json' }, body: JSON.stringify({ ...newAppt, starts_at: `${newAppt.date} ${newAppt.time}`, address: 'Alamat Klinik Pakar Hospital', documents_needed: ['Kad Temujanji', 'Kad Pengenalan'] }) });
-        if (!response.ok) return;
-        const created = await response.json();
-        setAppts([created, ...appts]);
-        setIsAddModalOpen(false);
-        setNewAppt({
-            title: '',
-            doctor: '',
-            hospital: 'Hospital Kuala Lumpur (HKL)',
-            department: '',
-            date: '',
-            time: '10:00 AM',
-            notes: ''
-        });
+        if (!newAppt.doctor || !newAppt.date || submitting) return;
+        setSubmitting(true);
+        try {
+            const response = await fetch('/api/appointments', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content, 'Accept': 'application/json' }, body: JSON.stringify({ ...newAppt, starts_at: `${newAppt.date} ${newAppt.time}`, address: 'Alamat Klinik Pakar Hospital', documents_needed: ['Kad Temujanji', 'Kad Pengenalan'] }) });
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                alert('Gagal menambah temujanji: ' + (errData.message || 'Sila semak input anda.'));
+                return;
+            }
+            const created = await response.json();
+            setAppts([created, ...appts]);
+            setIsAddModalOpen(false);
+            setNewAppt({
+                title: '',
+                doctor: '',
+                hospital: 'Hospital Kuala Lumpur (HKL)',
+                department: '',
+                date: '',
+                time: '10:00 AM',
+                notes: ''
+            });
+        } catch (error) {
+            console.error('Network error adding appointment:', error);
+            alert('Ralat sambungan rangkaian semasa menambah temujanji.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleDeleteAppointment = async (id) => {
+        if (!confirm('Adakah anda pasti mahu memadam temujanji ini? / Are you sure you want to delete this appointment?')) return;
+        try {
+            const response = await fetch(`/api/appointments/${id}`, {
+                method: 'DELETE',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                    'Accept': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                alert('Gagal memadam temujanji.');
+                return;
+            }
+            setAppts(prev => prev.filter(a => a.id !== id));
+        } catch (error) {
+            console.error('Error deleting appointment:', error);
+            alert('Ralat sambungan rangkaian semasa memadam temujanji.');
+        }
     };
 
     return (
@@ -119,7 +155,16 @@ export default function Appointments({ user, appointments: initialAppointments }
                         </div>
 
                         {/* Right Date Card & Navigation */}
-                        <div className="w-full lg:w-64 flex flex-col justify-between p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
+                        <div className="w-full lg:w-64 flex flex-col justify-between p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-center relative pt-8">
+                            <button
+                                type="button"
+                                onClick={() => handleDeleteAppointment(appt.id)}
+                                className="absolute top-2 right-2 p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-slate-700/50 hover:border-rose-500/20 transition-all transition-colors cursor-pointer"
+                                title="Padam Temujanji"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+
                             <div>
                                 <span className="text-xs uppercase font-bold text-indigo-400 tracking-wider">Tarikh & Masa</span>
                                 <div className="text-2xl font-black text-white my-1">{appt.date}</div>
@@ -227,9 +272,10 @@ export default function Appointments({ user, appointments: initialAppointments }
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md"
+                            disabled={submitting}
+                            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:text-slate-200 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5"
                         >
-                            Simpan Temujanji
+                            {submitting ? 'Menyimpan...' : 'Simpan Temujanji'}
                         </button>
                     </div>
                 </form>
