@@ -29,17 +29,12 @@ export default function Appointments({ user, appointments: initialAppointments }
         notes: ''
     });
 
-    const handleAddAppointment = (e) => {
+    const handleAddAppointment = async (e) => {
         e.preventDefault();
         if (!newAppt.doctor || !newAppt.date) return;
-        const created = {
-            id: Date.now(),
-            ...newAppt,
-            address: 'Alamat Klinik Pakar Hospital',
-            documentsNeeded: ['Kad Temujanji', 'Kad Pengenalan'],
-            status: 'Scheduled',
-            distanceKm: 5.0
-        };
+        const response = await fetch('/api/appointments', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content, 'Accept': 'application/json' }, body: JSON.stringify({ ...newAppt, starts_at: `${newAppt.date} ${newAppt.time}`, address: 'Alamat Klinik Pakar Hospital', documents_needed: ['Kad Temujanji', 'Kad Pengenalan'] }) });
+        if (!response.ok) return;
+        const created = await response.json();
         setAppts([created, ...appts]);
         setIsAddModalOpen(false);
         setNewAppt({

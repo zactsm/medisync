@@ -31,22 +31,19 @@ export default function Medications({ user, medications: initialMedications, adh
         pillsLeft: 30
     });
 
-    const toggleTaken = (id) => {
-        setMeds(prev => prev.map(m => m.id === id ? { ...m, takenToday: !m.takenToday } : m));
+    const toggleTaken = async (id) => {
+        const response = await fetch(`/api/medications/${id}/log`, { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content, 'Accept': 'application/json' } });
+        if (response.ok) setMeds(prev => prev.map(m => m.id === id ? { ...m, takenToday: !m.takenToday } : m));
     };
 
     const filteredMeds = meds.filter(m => filterTime === 'All' || m.timeOfDay === filterTime);
 
-    const handleAddMedication = (e) => {
+    const handleAddMedication = async (e) => {
         e.preventDefault();
         if (!newMed.name) return;
-        const created = {
-            id: Date.now(),
-            ...newMed,
-            refillThreshold: 7,
-            takenToday: false,
-            doctor: 'Dr. Pakar Klinik'
-        };
+        const response = await fetch('/api/medications', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content, 'Accept': 'application/json' }, body: JSON.stringify({ ...newMed, time: newMed.time }) });
+        if (!response.ok) return;
+        const created = await response.json();
         setMeds([created, ...meds]);
         setIsAddModalOpen(false);
         setNewMed({

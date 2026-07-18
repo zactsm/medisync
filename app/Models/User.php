@@ -22,6 +22,8 @@ class User extends Authenticatable
     public function documents() { return $this->hasMany(MedicalDocument::class); }
     public function medicalProfile() { return $this->hasOne(MedicalProfile::class); }
     public function symptomReports() { return $this->hasMany(SymptomReport::class); }
+    public function activityLogs() { return $this->hasMany(ActivityLog::class); }
+    public function notifications() { return $this->morphMany(Notification::class, 'notifiable'); }
     public function checklistItems() { return $this->hasMany(DashboardChecklistItem::class); }
     public function caregivers() { return $this->belongsToMany(self::class, 'caregiver_links', 'patient_id', 'caregiver_id')->withPivot(['relationship', 'is_primary'])->withTimestamps()->wherePivot('status', 'accepted'); }
     public function patients() { return $this->belongsToMany(self::class, 'caregiver_links', 'caregiver_id', 'patient_id')->withPivot(['relationship', 'is_primary'])->withTimestamps()->wherePivot('status', 'accepted'); }
