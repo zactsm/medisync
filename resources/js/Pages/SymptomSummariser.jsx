@@ -93,7 +93,7 @@ SEJARAH PERUBATAN PESAKIT:
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label className="block text-xs font-semibold text-slate-300 mb-1">Mula Berlaku (Onset)</label>
                             <input

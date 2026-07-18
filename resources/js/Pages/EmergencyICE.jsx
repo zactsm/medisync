@@ -62,7 +62,7 @@ export default function EmergencyICE({ user, patientICE }) {
                             Maklumat Asas & Kumpulan Darah
                         </h3>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:grid-cols-4">
                             <div>
                                 <label className="block text-xs font-semibold text-slate-400 mb-1">Kumpulan Darah</label>
                                 <input
