@@ -6,6 +6,18 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title inertia>{{ config('app.name', 'MediSync') }}</title>
 
+        <script>
+            (() => {
+                try {
+                    if (window.localStorage.getItem('medisync-theme') === 'dark') {
+                        document.documentElement.classList.add('dark');
+                    }
+                } catch (error) {
+                    // Theme preference is optional; the app remains usable if storage is unavailable.
+                }
+            })();
+        </script>
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

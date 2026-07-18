@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { supabase } from '../lib/supabase';
 import {
@@ -8,10 +8,12 @@ import {
     HeartPulse,
     LayoutDashboard,
     Menu,
+    Moon,
     Pill,
     Settings,
     ShieldAlert,
     Stethoscope,
+    Sun,
     Users,
     X,
 } from 'lucide-react';
@@ -32,6 +34,23 @@ export default function Header({ user }) {
     const { url } = usePage();
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [activePanel, setActivePanel] = useState(null);
+    const [theme, setTheme] = useState(() => {
+        if (typeof window === 'undefined') return 'light';
+        try {
+            return window.localStorage.getItem('medisync-theme') === 'dark' ? 'dark' : 'light';
+        } catch (error) {
+            return 'light';
+        }
+    });
+
+    useEffect(() => {
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        try {
+            window.localStorage.setItem('medisync-theme', theme);
+        } catch (error) {
+            // Theme preference is optional; the current session still follows the toggle.
+        }
+    }, [theme]);
 
     const isActive = (href) => href === '/' ? url === '/' : url.startsWith(href);
     const initials = (user?.name || 'MediSync')
@@ -70,6 +89,17 @@ export default function Header({ user }) {
                 </nav>
 
                 <div className="ml-auto flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')}
+                        className="theme-button"
+                        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                        aria-pressed={theme === 'dark'}
+                        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                    >
+                        {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    </button>
+
                     <div className="relative hidden sm:block">
                         <button
                             type="button"
