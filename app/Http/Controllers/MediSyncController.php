@@ -149,25 +149,39 @@ class MediSyncController extends Controller
             ->get();
     }
 
-    private function adherenceRate(User $user): int
+    private function adherenceRate(User $user, ?Collection $activeMeds = null): int
     {
-        $activeCount = $user->medications()->where('active', true)->count();
+        if ($activeMeds === null) {
+            $activeMeds = $user->medications()->where('active', true)->get();
+        }
+        $activeCount = $activeMeds->count();
         if ($activeCount === 0) {
             return 0;
         }
 
+        $medicationIds = $activeMeds->pluck('id')->all();
+
         $logs = MedicationLog::query()
-            ->whereIn('medication_id', $user->medications()->where('active', true)->select('id'))
+            ->whereIn('medication_id', $medicationIds)
             ->whereBetween('taken_on', [Carbon::today()->subDays(29), Carbon::today()])
             ->count();
 
         return min(100, (int) round(($logs / ($activeCount * 30)) * 100));
     }
 
-    private function streakDays(User $user): int
+    private function streakDays(User $user, ?Collection $activeMeds = null): int
     {
+        if ($activeMeds === null) {
+            $activeMeds = $user->medications()->where('active', true)->get();
+        }
+
+        $medicationIds = $activeMeds->pluck('id')->all();
+        if (empty($medicationIds)) {
+            return 0;
+        }
+
         $dates = MedicationLog::query()
-            ->whereIn('medication_id', $user->medications()->where('active', true)->select('id'))
+            ->whereIn('medication_id', $medicationIds)
             ->select('taken_on')
             ->distinct()
             ->orderByDesc('taken_on')
@@ -203,14 +217,31 @@ class MediSyncController extends Controller
         $medications = $this->activeMedications($user);
         $appointments = $user->appointments()->where('starts_at', '>=', now())->orderBy('starts_at')->get();
         $profile = $user->medicalProfile;
-        $adherence = $this->adherenceRate($user);
+        $adherence = $this->adherenceRate($user, $medications);
         $caregivers = $user->caregivers()->get();
-        $weeklyActivity = collect(range(6, 0))->map(function (int $daysAgo) use ($user, $medications) {
+
+        $sevenDaysAgo = Carbon::today()->subDays(6);
+        $medicationIds = $medications->pluck('id')->all();
+        $logsLastSevenDays = empty($medicationIds) ? collect() : MedicationLog::query()
+            ->whereIn('medication_id', $medicationIds)
+            ->where('taken_on', '>=', $sevenDaysAgo)
+            ->get();
+
+        $logsByDate = $logsLastSevenDays->groupBy(function ($log) {
+            return Carbon::parse($log->taken_on)->toDateString();
+        })->map(fn ($group) => $group->count());
+
+        $weeklyActivity = collect(range(6, 0))->map(function (int $daysAgo) use ($medications, $logsByDate) {
             $date = Carbon::today()->subDays($daysAgo);
-            $count = MedicationLog::query()->whereIn('medication_id', $medications->pluck('id'))->whereDate('taken_on', $date)->count();
+            $dateStr = $date->toDateString();
+            $count = $logsByDate->get($dateStr, 0);
             $max = max(1, $medications->count());
 
-            return ['day' => $date->format('D'), 'value' => min(100, (int) round(($count / $max) * 100)), 'label' => $count.' log'.($count === 1 ? '' : 's')];
+            return [
+                'day' => $date->format('D'),
+                'value' => min(100, (int) round(($count / $max) * 100)),
+                'label' => $count.' log'.($count === 1 ? '' : 's')
+            ];
         })->values()->all();
 
         $calendar = $appointments->map(function (Appointment $appointment, int $index) {
@@ -291,12 +322,13 @@ class MediSyncController extends Controller
     public function medications()
     {
         $user = $this->currentUser();
+        $medications = $this->activeMedications($user);
 
         return Inertia::render('Medications', [
             'user' => $this->userPayload($user),
-            'medications' => $this->activeMedications($user)->map(fn (Medication $medication) => $this->medicationPayload($medication))->values()->all(),
-            'adherenceRate' => $this->adherenceRate($user),
-            'streakDays' => $this->streakDays($user),
+            'medications' => $medications->map(fn (Medication $medication) => $this->medicationPayload($medication))->values()->all(),
+            'adherenceRate' => $this->adherenceRate($user, $medications),
+            'streakDays' => $this->streakDays($user, $medications),
         ]);
     }
 

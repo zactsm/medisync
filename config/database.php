@@ -97,6 +97,7 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('SUPABASE_DB_SSLMODE', env('DB_SSLMODE', 'prefer')),
+            'persistent' => true,
         ],
 
         'sqlsrv' => [
