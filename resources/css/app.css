@@ -1002,11 +1002,65 @@ html.dark {
 .secondary-button:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(30, 30, 30, 0.11); }
 
 .welcome-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   color: var(--color-ink);
   background:
     radial-gradient(circle at 82% 16%, rgba(255, 199, 56, 0.2), transparent 28rem),
     radial-gradient(circle at 12% 80%, rgba(255, 244, 209, 0.72), transparent 25rem),
     var(--color-canvas);
+}
+
+.welcome-page > *:not(.welcome-background-orbs) { position: relative; z-index: 1; }
+.welcome-background-orbs { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.welcome-orb {
+  position: absolute;
+  display: block;
+  width: clamp(10rem, 18vw, 19rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(42px);
+  opacity: 0.42;
+  will-change: transform;
+}
+
+.welcome-orb-one {
+  top: 6%;
+  right: 4%;
+  background: rgba(255, 199, 56, 0.5);
+  animation: welcome-orb-drift-one 9s ease-in-out infinite;
+}
+
+.welcome-orb-two {
+  bottom: 8%;
+  left: 3%;
+  width: clamp(9rem, 15vw, 16rem);
+  background: rgba(104, 177, 159, 0.28);
+  animation: welcome-orb-drift-two 11s ease-in-out infinite;
+}
+
+.welcome-orb-three {
+  top: 42%;
+  left: 43%;
+  width: clamp(7rem, 12vw, 13rem);
+  background: rgba(255, 223, 151, 0.34);
+  animation: welcome-orb-drift-three 13s ease-in-out infinite;
+}
+
+@keyframes welcome-orb-drift-one {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-2rem, 1.5rem, 0) scale(1.08); }
+}
+
+@keyframes welcome-orb-drift-two {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(2rem, -1.75rem, 0) scale(1.12); }
+}
+
+@keyframes welcome-orb-drift-three {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(1rem, 2rem, 0) scale(0.9); }
 }
 
 .welcome-header { min-height: 3.2rem; }
@@ -1026,6 +1080,24 @@ html.dark {
 .welcome-feature-icon { width: 2.5rem; height: 2.5rem; margin-bottom: 1.15rem; border-radius: 0.8rem; }
 .welcome-feature-card h2 { font-size: 0.95rem; font-weight: 800; }
 .welcome-feature-card p { margin-top: 0.45rem; color: rgba(30, 30, 30, 0.56); font-size: 0.75rem; line-height: 1.5; }
+
+html.dark .welcome-page {
+  background:
+    radial-gradient(circle at 82% 16%, rgba(255, 199, 56, 0.12), transparent 28rem),
+    radial-gradient(circle at 12% 80%, rgba(58, 95, 92, 0.18), transparent 25rem),
+    var(--color-canvas);
+}
+
+html.dark .welcome-description,
+html.dark .welcome-showcase-copy,
+html.dark .welcome-feature-card p { color: rgba(246, 241, 231, 0.64); }
+
+html.dark .welcome-showcase-orb { background: rgba(255, 199, 56, 0.2); }
+html.dark .secondary-button { color: var(--color-ink); background: rgba(31, 37, 40, 0.88); border-color: rgba(255, 255, 255, 0.11); }
+html.dark .secondary-button:hover { background: #2b3337; }
+html.dark .welcome-orb-one { background: rgba(255, 199, 56, 0.22); }
+html.dark .welcome-orb-two { background: rgba(78, 159, 148, 0.2); }
+html.dark .welcome-orb-three { background: rgba(255, 219, 128, 0.16); }
 
 @media (max-width: 1023px) {
   .medisync-app,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, HeartPulse, Pill, ShieldCheck, Users } from 'lucide-react';
-import LanguageSelector from '../Components/LanguageSelector';
+import ThemeToggle from '../Components/ThemeToggle';
 import { useLanguage } from '../lib/language';
 
 export default function Welcome() {
@@ -9,15 +9,20 @@ export default function Welcome() {
 
     return (
         <>
-            <Head title="Welcome - MediSync" />
+            <Head title={t('welcome.pageTitle')} />
             <main className="welcome-page min-h-screen px-4 py-5 sm:px-8 lg:px-12">
+                <div className="welcome-background-orbs" aria-hidden="true">
+                    <span className="welcome-orb welcome-orb-one" />
+                    <span className="welcome-orb welcome-orb-two" />
+                    <span className="welcome-orb welcome-orb-three" />
+                </div>
                 <header className="welcome-header mx-auto flex w-full max-w-[1320px] items-center justify-between gap-4">
-                    <Link href="/" className="brand-mark" aria-label="MediSync home">
+                    <Link href="/" className="brand-mark" aria-label={t('welcome.home')}>
                         <span className="brand-icon"><HeartPulse className="h-4 w-4" /></span>
                         <span className="brand-wordmark">Medi<span>Sync</span></span>
                     </Link>
                     <div className="flex items-center gap-2">
-                        <LanguageSelector />
+                        <ThemeToggle />
                         <Link href="/login" className="secondary-button">{t('welcome.signIn')}</Link>
                     </div>
                 </header>
@@ -35,8 +40,8 @@ export default function Welcome() {
                         <div className="welcome-showcase-orb" />
                         <div className="welcome-showcase-icon"><HeartPulse className="h-8 w-8" /></div>
                         <p className="section-label">MediSync</p>
-                        <h2 className="welcome-showcase-title">Care That Feels Clear</h2>
-                        <p className="welcome-showcase-copy">One calm place for medicines, appointments, family support, and emergency readiness.</p>
+                        <h2 className="welcome-showcase-title">{t('welcome.showcaseTitle')}</h2>
+                        <p className="welcome-showcase-copy">{t('welcome.showcaseCopy')}</p>
                         <div className="welcome-showcase-line"><span /><span /><span /></div>
                     </div>
                 </section>

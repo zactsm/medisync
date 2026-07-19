@@ -13,6 +13,7 @@ export default function Auth({ patients = [], caregivers = [] }) {
         try {
             const response = await fetch('/auth/bypass', {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -24,7 +25,7 @@ export default function Auth({ patients = [], caregivers = [] }) {
             if (!response.ok) {
                 setError(data.message || 'Gagal log masuk. Sila cuba lagi.');
             } else {
-                window.location.href = '/';
+                window.location.replace(data.redirect || '/');
             }
         } catch (err) {
             setError('Ralat rangkaian. Sila pastikan sambungan internet dan database anda aktif.');

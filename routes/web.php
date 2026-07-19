@@ -12,16 +12,7 @@ use App\Http\Controllers\AuthController;
 
 Route::get('/login', [AuthController::class, 'show'])->name('login');
 Route::post('/auth/sync', [AuthController::class, 'sync'])->name('auth.sync');
-Route::post('/auth/bypass', function (Illuminate\Http\Request $request) {
-    $email = $request->input('email');
-    abort_unless($email, 400, 'Email is required');
-    $user = App\Models\User::where('email', $email)->firstOrFail();
-
-    auth()->login($user);
-    $request->session()->regenerate();
-
-    return response()->json(['user' => $user]);
-})->name('auth.bypass');
+Route::post('/auth/bypass', [AuthController::class, 'bypass'])->name('auth.bypass');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', [MediSyncController::class, 'dashboard'])->name('dashboard');
 Route::middleware('auth')->group(function () {

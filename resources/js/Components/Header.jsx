@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { supabase } from '../lib/supabase';
 import LanguageSelector from './LanguageSelector';
+import ThemeToggle from './ThemeToggle';
 import { useLanguage } from '../lib/language';
 import {
     Bell,
     ChevronDown,
-    Moon,
     PanelLeftClose,
     PanelLeftOpen,
-    Sun,
 } from 'lucide-react';
 
 export default function Header({ user, sidebarCollapsed, onToggleSidebar, onOpenSidebar }) {
@@ -18,24 +17,6 @@ export default function Header({ user, sidebarCollapsed, onToggleSidebar, onOpen
     const { t } = useLanguage();
     const [activePanel, setActivePanel] = useState(null);
     const [isSigningOut, setIsSigningOut] = useState(false);
-    const [theme, setTheme] = useState(() => {
-        if (typeof window === 'undefined') return 'light';
-        try {
-            return window.localStorage.getItem('medisync-theme') === 'dark' ? 'dark' : 'light';
-        } catch (error) {
-            return 'light';
-        }
-    });
-
-    useEffect(() => {
-        document.documentElement.classList.toggle('dark', theme === 'dark');
-        try {
-            window.localStorage.setItem('medisync-theme', theme);
-        } catch (error) {
-            // Theme preference is optional; the current session still follows the toggle.
-        }
-    }, [theme]);
-
     const initials = (user?.name || 'MediSync')
         .split(' ')
         .filter(Boolean)
@@ -91,16 +72,7 @@ export default function Header({ user, sidebarCollapsed, onToggleSidebar, onOpen
 
                 <div className="ml-auto flex items-center gap-2">
                     <LanguageSelector />
-                    <button
-                        type="button"
-                        onClick={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')}
-                        className="theme-button"
-                        aria-label={theme === 'dark' ? t('header.lightMode') : t('header.darkMode')}
-                        aria-pressed={theme === 'dark'}
-                        title={theme === 'dark' ? t('header.lightMode') : t('header.darkMode')}
-                    >
-                        {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                    </button>
+                    <ThemeToggle />
 
                     <div className="relative">
                         <button

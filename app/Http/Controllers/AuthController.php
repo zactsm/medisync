@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Hash, Http, Log};
+use Illuminate\Support\Facades\{Auth, Hash, Http, Log};
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -16,6 +16,25 @@ class AuthController extends Controller
         return Inertia::render('Auth', [
             'patients' => $patients,
             'caregivers' => $caregivers,
+        ]);
+    }
+
+    public function bypass(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $user = User::where('email', $data['email'])->firstOrFail();
+
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+
+        return response()->json([
+            'user' => $user,
+            'redirect' => route('dashboard'),
+        ], 200, [
+            'Cache-Control' => 'no-store',
         ]);
     }
 
