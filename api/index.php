@@ -26,4 +26,7 @@ putenv("APP_CONFIG_CACHE=/tmp/bootstrap/cache/config.php");
 putenv("APP_ROUTES_CACHE=/tmp/bootstrap/cache/routes.php");
 putenv("APP_EVENTS_CACHE=/tmp/bootstrap/cache/events.php");
 
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+
 require __DIR__ . '/../public/index.php';
+
