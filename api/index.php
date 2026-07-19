@@ -9,6 +9,8 @@ $neededDirs = [
     $tmpStorage . '/framework/cache/data',
     $tmpStorage . '/framework/sessions',
     $tmpStorage . '/logs',
+    $tmpStorage . '/app/private',
+    $tmpStorage . '/app/public',
     '/tmp/bootstrap/cache',
 ];
 

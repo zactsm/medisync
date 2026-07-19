@@ -342,28 +342,6 @@ class MediSyncController extends Controller
         ]);
     }
 
-    public function termSimplifier()
-    {
-        $user = $this->currentUser();
-        $terms = MedicalTerm::query()->where('is_symptom', false)->orderBy('term')->get();
-
-        return Inertia::render('TermSimplifier', [
-            'user' => $this->userPayload($user),
-            'sampleSearches' => $terms->where('featured', true)->map(fn (MedicalTerm $term) => [
-                'term' => $term->term,
-                'category' => $term->category,
-                'simpleExplanation' => $term->simple_explanation,
-                'analogy' => $term->analogy,
-                'keyTakeaways' => $term->key_takeaways ?? [],
-                'questionsForDoctor' => $term->questions_for_doctor ?? [],
-            ])->values()->all(),
-            'dictionary' => $terms->map(fn (MedicalTerm $term) => [
-                'term' => $term->term,
-                'malay' => $term->malay,
-                'desc' => $term->description ?: $term->simple_explanation,
-            ])->values()->all(),
-        ]);
-    }
 
     public function documents()
     {

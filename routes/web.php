@@ -26,7 +26,6 @@ Route::get('/', [MediSyncController::class, 'dashboard'])->name('dashboard');
 Route::middleware('auth')->group(function () {
     Route::get('/medications',        [MediSyncController::class, 'medications'])->name('medications');
     Route::get('/appointments',       [MediSyncController::class, 'appointments'])->name('appointments');
-    Route::get('/term-simplifier',    [MediSyncController::class, 'termSimplifier'])->name('termSimplifier');
     Route::get('/documents',          [MediSyncController::class, 'documents'])->name('documents');
     Route::get('/caregiver',          [MediSyncController::class, 'caregiverSync'])->name('caregiverSync');
     Route::get('/symptom-summariser', [MediSyncController::class, 'symptomSummariser'])->name('symptomSummariser');

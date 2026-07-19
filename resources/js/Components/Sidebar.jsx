@@ -7,7 +7,6 @@ import {
     LayoutDashboard,
     Pill,
     ShieldAlert,
-    Sparkles,
     Stethoscope,
     Users,
 } from 'lucide-react';
@@ -20,7 +19,6 @@ const navigation = [
     { name: 'Caregiver', malay: 'Penjaga', href: '/caregiver', icon: Users },
     { name: 'Documents', malay: 'Dokumen', href: '/documents', icon: FileText },
     { name: 'Health tools', malay: 'Alat kesihatan', href: '/symptom-summariser', icon: Stethoscope },
-    { name: 'Term simplifier', malay: 'Istilah perubatan', href: '/term-simplifier', icon: Sparkles },
     { name: 'Emergency', malay: 'Kecemasan', href: '/ice', icon: ShieldAlert, danger: true },
 ];
 
