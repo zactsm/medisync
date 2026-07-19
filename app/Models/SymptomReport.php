@@ -1,4 +1,28 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
-class SymptomReport extends Model { protected $guarded=[]; protected $casts=['inputs'=>'array']; public function user(){return $this->belongsTo(User::class);} }
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class SymptomReport extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'inputs',
+        'summary',
+    ];
+
+    protected $casts = [
+        'inputs' => 'array',
+    ];
+
+    // -----------------------------------------------------------------
+    // Relationships
+    // -----------------------------------------------------------------
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}

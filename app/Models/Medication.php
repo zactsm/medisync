@@ -1,4 +1,54 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
-class Medication extends Model { protected $guarded=[]; protected $casts=['active'=>'boolean','refill_threshold'=>'integer']; public function user(){return $this->belongsTo(User::class);} public function logs(){return $this->hasMany(MedicationLog::class);} }
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Medication extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'name',
+        'category',
+        'dosage',
+        'purpose',
+        'instructions',
+        'frequency',
+        'time',
+        'pills_left',
+        'refill_threshold',
+        'doctor',
+        'active',
+    ];
+
+    protected $casts = [
+        'active'           => 'boolean',
+        'refill_threshold' => 'integer',
+        'pills_left'       => 'integer',
+    ];
+
+    // -----------------------------------------------------------------
+    // Relationships
+    // -----------------------------------------------------------------
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(MedicationLog::class);
+    }
+
+    // -----------------------------------------------------------------
+    // Scopes
+    // -----------------------------------------------------------------
+
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
+    }
+}

@@ -1,51 +1,38 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\MediSyncController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MediSyncController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | MediSync Web Routes
 |--------------------------------------------------------------------------
+| These routes render Inertia pages. All API endpoints live in routes/api.php
+| and are mounted under the /api prefix via bootstrap/app.php.
+|--------------------------------------------------------------------------
 */
 
-Route::get('/login', [AuthController::class, 'show'])->name('login');
-Route::post('/auth/sync', [AuthController::class, 'sync'])->name('auth.sync');
+// ── Auth ─────────────────────────────────────────────────────────────────────
+Route::get('/login',        [AuthController::class, 'show'])->name('login');
+Route::post('/auth/sync',   [AuthController::class, 'sync'])->name('auth.sync');
 Route::post('/auth/bypass', [AuthController::class, 'bypass'])->name('auth.bypass');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('/', [MediSyncController::class, 'dashboard'])->name('dashboard');
-Route::middleware('auth')->group(function () {
-Route::get('/medications', [MediSyncController::class, 'medications'])->name('medications');
-Route::get('/appointments', [MediSyncController::class, 'appointments'])->name('appointments');
-Route::get('/term-simplifier', [MediSyncController::class, 'termSimplifier'])->name('termSimplifier');
-Route::get('/documents', [MediSyncController::class, 'documents'])->name('documents');
-Route::get('/caregiver', [MediSyncController::class, 'caregiverSync'])->name('caregiverSync');
-Route::get('/symptom-summariser', [MediSyncController::class, 'symptomSummariser'])->name('symptomSummariser');
-Route::get('/emergency-sos', [MediSyncController::class, 'emergencySOS'])->name('emergencySOS');
-Route::get('/ice', [MediSyncController::class, 'emergencyICE'])->name('emergencyICE');
-});
-Route::get('/ice/public/{code}', [MediSyncController::class, 'publicICE'])->name('publicICE');
+Route::post('/logout',      [AuthController::class, 'logout'])->name('logout');
 
-use App\Http\Controllers\Api\MediSyncApiController;
-Route::prefix('api')->group(function () {
-    Route::post('/auth/request-otp', [MediSyncApiController::class, 'requestOtp']);
-    Route::post('/auth/verify-otp', [MediSyncApiController::class, 'verifyOtp']);
-    Route::middleware('web')->group(function () {
-        Route::get('/medications', [MediSyncApiController::class, 'medications']);
-        Route::post('/medications', [MediSyncApiController::class, 'storeMedication']);
-        Route::post('/medications/{medication}/log', [MediSyncApiController::class, 'logMedication']);
-        Route::delete('/medications/{medication}', [MediSyncApiController::class, 'destroyMedication']);
-        Route::get('/appointments', [MediSyncApiController::class, 'appointments']);
-        Route::post('/appointments', [MediSyncApiController::class, 'storeAppointment']);
-        Route::delete('/appointments/{appointment}', [MediSyncApiController::class, 'destroyAppointment']);
-        Route::get('/medical-profile', [MediSyncApiController::class, 'profile']);
-        Route::put('/medical-profile', [MediSyncApiController::class, 'updateProfile']);
-        Route::post('/symptoms', [MediSyncApiController::class, 'storeSymptom']);
-        Route::post('/caregivers/invite', [MediSyncApiController::class, 'inviteCaregiver']);
-        Route::patch('/caregivers/{link}', [MediSyncApiController::class, 'respondCaregiver']);
-        Route::get('/documents', [MediSyncApiController::class, 'documents']);
-        Route::post('/documents', [MediSyncApiController::class, 'uploadDocument']);
-    });
+// ── Dashboard (guest-accessible — shows Welcome page when not logged in) ──────
+Route::get('/', [MediSyncController::class, 'dashboard'])->name('dashboard');
+
+// ── Authenticated pages ────────────────────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/medications',        [MediSyncController::class, 'medications'])->name('medications');
+    Route::get('/appointments',       [MediSyncController::class, 'appointments'])->name('appointments');
+    Route::get('/term-simplifier',    [MediSyncController::class, 'termSimplifier'])->name('termSimplifier');
+    Route::get('/documents',          [MediSyncController::class, 'documents'])->name('documents');
+    Route::get('/caregiver',          [MediSyncController::class, 'caregiverSync'])->name('caregiverSync');
+    Route::get('/symptom-summariser', [MediSyncController::class, 'symptomSummariser'])->name('symptomSummariser');
+    Route::get('/emergency-sos',      [MediSyncController::class, 'emergencySOS'])->name('emergencySOS');
+    Route::get('/ice',                [MediSyncController::class, 'emergencyICE'])->name('emergencyICE');
 });
-Route::get('/api/ice/{code}', [MediSyncApiController::class, 'publicIce'])->name('api.publicIce');
+
+// ── Public ICE card (no auth) ─────────────────────────────────────────────────
+Route::get('/ice/public/{code}', [MediSyncController::class, 'publicICE'])->name('publicICE');

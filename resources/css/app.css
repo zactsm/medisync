@@ -1142,10 +1142,16 @@ html.dark .welcome-orb-three { background: rgba(255, 219, 128, 0.16); }
 
 /* Legacy healthcare utilities retained for secondary route compatibility. */
 .glass-card {
-  background: rgba(30, 41, 59, 0.75);
+  background: rgba(255, 253, 248, 0.76);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(30, 30, 30, 0.08);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+}
+
+html.dark .glass-card {
+  background: rgba(30, 41, 59, 0.75);
+  border-color: rgba(255, 255, 255, 0.08);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
