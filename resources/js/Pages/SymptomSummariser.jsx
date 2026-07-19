@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import AppLayout from '../Layouts/AppLayout';
 import Badge from '../Components/Badge';
+import { useLanguage } from '../lib/language';
 import {
     Stethoscope,
     Sparkles,
@@ -16,12 +17,13 @@ import {
 } from 'lucide-react';
 
 export default function SymptomSummariser({ user, commonSymptoms }) {
+    const { t } = useLanguage();
     const [formData, setFormData] = useState({ primarySymptom: '', onset: '', duration: '', severity: 1, triggers: '', accompanying: '', treatmentsTried: '' });
 
     const [copied, setCopied] = useState(false);
     const [saved, setSaved] = useState(false);
 
-    const generatedSummary = `SKRIN PERUBATAN SEBELUM KONSULTASI (HISTORY TAKING SUMMARY):
+    const generatedSummary = `Skrin Perubatan Sebelum Konsultasi (History Taking Summary):
 • Aduan Utama (Chief Complaint): ${formData.primarySymptom}
 • Mula Berlaku (Onset): ${formData.onset}
 • Tempoh & Kekerapan (Duration): ${formData.duration}
@@ -30,11 +32,13 @@ export default function SymptomSummariser({ user, commonSymptoms }) {
 • Simptom Sampingan (Associated Symptoms): ${formData.accompanying}
 • Kawalan Sendiri (Pre-treatments Tried): ${formData.treatmentsTried}
 
-SEJARAH PERUBATAN PESAKIT:
+Sejarah Perubatan Pesakit:
 • Pesakit: ${user?.name || '—'}`;
 
+    const localizedSummary = `${t('symptoms.history')}:\n• ${t('symptoms.complaint')}: ${formData.primarySymptom}\n• ${t('symptoms.onsetLabel')}: ${formData.onset}\n• ${t('symptoms.durationLabel')}: ${formData.duration}\n• ${t('symptoms.severityLabel')}: ${formData.severity}/10\n• ${t('symptoms.triggersLabel')}: ${formData.triggers}\n• ${t('symptoms.associated')}: ${formData.accompanying}\n• ${t('symptoms.pretreatments')}: ${formData.treatmentsTried}\n\n${t('symptoms.history')}:\n• ${t('symptoms.patient')}: ${user?.name || '—'}`;
+
     const handleCopy = () => {
-        navigator.clipboard.writeText(generatedSummary);
+        navigator.clipboard.writeText(localizedSummary);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -46,16 +50,16 @@ SEJARAH PERUBATAN PESAKIT:
 
     return (
         <AppLayout user={user}>
-            <Head title="Symptom Summariser Untuk Doktor" />
+            <Head title={t('symptoms.title')} />
 
             {/* Page Header */}
             <div className="mb-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold mb-2">
-                    <Stethoscope className="w-4 h-4" /> Penyediaan Temujanji Doktor (Intake Assistant)
+                    <Stethoscope className="w-4 h-4" /> {t('symptoms.eyebrow')}
                 </div>
-                <h1 className="text-3xl font-black text-white">Symptom Summariser Untuk Doktor</h1>
+                <h1 className="text-3xl font-black text-white">{t('symptoms.title')}</h1>
                 <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-                    Masukkan simptom yang anda rasai. Sistem akan menstrukturkan laporan perenggan SOAP klinikal ringkas untuk dibaca oleh doktor semasa sesi temujanji.
+                    {t('symptoms.description')}
                 </p>
             </div>
 
@@ -64,11 +68,11 @@ SEJARAH PERUBATAN PESAKIT:
                 <div className="glass-card p-6 rounded-2xl border-emerald-500/30 space-y-5">
                     <h3 className="text-lg font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
                         <Activity className="w-5 h-5 text-emerald-400" />
-                        Borang Catatan Simptom
+                        {t('symptoms.form')}
                     </h3>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">Simptom Utama / Sakit Yang Dirasai</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('symptoms.primary')}</label>
                         <input
                             type="text"
                             value={formData.primarySymptom}
@@ -91,7 +95,7 @@ SEJARAH PERUBATAN PESAKIT:
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Mula Berlaku (Onset)</label>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('symptoms.onset')}</label>
                             <input
                                 type="text"
                                 value={formData.onset}
@@ -100,7 +104,7 @@ SEJARAH PERUBATAN PESAKIT:
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Tempoh & Kekerapan</label>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('symptoms.duration')}</label>
                             <input
                                 type="text"
                                 value={formData.duration}
@@ -112,7 +116,7 @@ SEJARAH PERUBATAN PESAKIT:
 
                     <div>
                         <div className="flex items-center justify-between mb-1">
-                            <label className="text-xs font-semibold text-slate-300">Skala Kesakitan (1 - 10)</label>
+                            <label className="text-xs font-semibold text-slate-300">{t('symptoms.severity')}</label>
                             <span className="text-xs font-black text-emerald-400">{formData.severity} / 10</span>
                         </div>
                         <input
@@ -126,7 +130,7 @@ SEJARAH PERUBATAN PESAKIT:
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">Faktor Pencetus (Bila Rasa Lebih Teruk?)</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('symptoms.triggers')}</label>
                         <input
                             type="text"
                             value={formData.triggers}
@@ -136,7 +140,7 @@ SEJARAH PERUBATAN PESAKIT:
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">Simptom Sampingan Lain</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('symptoms.accompanying')}</label>
                         <input
                             type="text"
                             value={formData.accompanying}
@@ -146,7 +150,7 @@ SEJARAH PERUBATAN PESAKIT:
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">Rawatan / Langkah Ditunjuk Sendiri</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('symptoms.treatments')}</label>
                         <input
                             type="text"
                             value={formData.treatmentsTried}
@@ -162,17 +166,17 @@ SEJARAH PERUBATAN PESAKIT:
                         <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
                             <h3 className="text-lg font-bold text-white flex items-center gap-2">
                                 <Sparkles className="w-5 h-5 text-emerald-400" />
-                                Laporan Ringkasan Doktor (SOAP Intake)
+                                {t('symptoms.report')}
                             </h3>
-                            <Badge variant="emerald font-mono">Format Klinik</Badge>
+                            <Badge variant="emerald font-mono">{t('symptoms.format')}</Badge>
                         </div>
 
                         <p className="text-xs text-slate-300 mb-4">
-                            Tunjukkan perenggan ini terus kepada doktor atau jururawat semasa mengambil sejarah perubatan di klinik:
+                            {t('symptoms.reportHint')}
                         </p>
 
                         <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-emerald-300 whitespace-pre-wrap leading-relaxed">
-                            {generatedSummary}
+                            {localizedSummary}
                         </div>
                     </div>
 
@@ -182,9 +186,9 @@ SEJARAH PERUBATAN PESAKIT:
                             className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
                         >
                             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                            {copied ? 'Ringkasan Berjaya Disalin!' : 'Salin Ringkasan Untuk Doktor'}
+                            {copied ? t('symptoms.copied') : t('symptoms.copy')}
                         </button>
-                        <button onClick={handleSave} className="flex-1 py-3 rounded-xl border border-slate-700 text-slate-200 font-extrabold text-xs">{saved ? 'Disimpan!' : 'Simpan laporan'}</button>
+                        <button onClick={handleSave} className="flex-1 py-3 rounded-xl border border-slate-700 text-slate-200 font-extrabold text-xs">{saved ? t('symptoms.saved') : t('symptoms.save')}</button>
                     </div>
                 </div>
             </div>

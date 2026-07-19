@@ -23,8 +23,8 @@ Route::post('/auth/bypass', function (Illuminate\Http\Request $request) {
     return response()->json(['user' => $user]);
 })->name('auth.bypass');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::middleware('auth')->group(function () {
 Route::get('/', [MediSyncController::class, 'dashboard'])->name('dashboard');
+Route::middleware('auth')->group(function () {
 Route::get('/medications', [MediSyncController::class, 'medications'])->name('medications');
 Route::get('/appointments', [MediSyncController::class, 'appointments'])->name('appointments');
 Route::get('/term-simplifier', [MediSyncController::class, 'termSimplifier'])->name('termSimplifier');

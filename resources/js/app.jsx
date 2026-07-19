@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { supabase } from './lib/supabase';
+import { LanguageProvider } from './lib/language';
 
 const appName = import.meta.env.VITE_APP_NAME || 'MediSync';
 
@@ -11,7 +12,7 @@ createInertiaApp({
     resolve: (name) => resolvePageComponent(`./Pages/${name}.jsx`, import.meta.glob('./Pages/**/*.jsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);
-        root.render(<App {...props} />);
+        root.render(<LanguageProvider><App {...props} /></LanguageProvider>);
         supabase?.auth.getSession().then(async ({ data }) => {
             if (data.session) await fetch('/auth/sync', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${data.session.access_token}`, 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content }, body: JSON.stringify({ access_token: data.session.access_token }) });
         });

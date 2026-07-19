@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import AppLayout from '../Layouts/AppLayout';
 import Badge from '../Components/Badge';
 import Modal from '../Components/Modal';
+import { useLanguage } from '../lib/language';
 import {
     Pill,
     Plus,
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react';
 
 export default function Medications({ user, medications: initialMedications, adherenceRate, streakDays }) {
+    const { t } = useLanguage();
     const [meds, setMeds] = useState(initialMedications);
     const [filterTime, setFilterTime] = useState('All');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -51,7 +53,7 @@ export default function Medications({ user, medications: initialMedications, adh
             const response = await fetch('/api/medications', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content, 'Accept': 'application/json' }, body: JSON.stringify({ ...newMed, time: newMed.time }) });
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
-                alert('Gagal menambah ubat: ' + (errData.message || 'Sila semak input anda.'));
+                alert(`${t('medications.errorAdd')} ${errData.message || ''}`);
                 return;
             }
             const created = await response.json();
@@ -68,14 +70,14 @@ export default function Medications({ user, medications: initialMedications, adh
             });
         } catch (error) {
             console.error('Network error adding medication:', error);
-            alert('Ralat sambungan rangkaian semasa menambah rekod ubat.');
+            alert(t('medications.network'));
         } finally {
             setSubmitting(false);
         }
     };
 
     const handleDeleteMedication = async (id) => {
-        if (!confirm('Adakah anda pasti mahu memadam ubat ini? / Are you sure you want to delete this medication?')) return;
+        if (!confirm(t('medications.deleteConfirm'))) return;
         try {
             const response = await fetch(`/api/medications/${id}`, {
                 method: 'DELETE',
@@ -86,27 +88,27 @@ export default function Medications({ user, medications: initialMedications, adh
                 }
             });
             if (!response.ok) {
-                alert('Gagal memadam rekod ubat.');
+                alert(t('medications.errorDelete'));
                 return;
             }
             setMeds(prev => prev.filter(m => m.id !== id));
         } catch (error) {
             console.error('Error deleting medication:', error);
-            alert('Ralat sambungan rangkaian semasa memadam rekod ubat.');
+            alert(t('medications.network'));
         }
     };
 
     return (
         <AppLayout user={user}>
-            <Head title="Pengurusan Ubat & Peringatan" />
+            <Head title={t('medications.title')} />
 
             {/* Top Stat Banner */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <div className="glass-card p-5 rounded-2xl flex items-center justify-between">
                     <div>
-                        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Kadar Pematuhan</span>
+                        <span className="text-xs text-slate-400 font-semibold tracking-wider">{t('medications.adherence')}</span>
                         <div className="text-2xl font-black text-emerald-400 mt-1">{adherenceRate}%</div>
-                        <p className="text-[11px] text-slate-400 mt-0.5">Ubat diambil mengikut jadual</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">{t('medications.adherenceText')}</p>
                     </div>
                     <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center glow-emerald">
                         <CheckCircle2 className="w-6 h-6" />
@@ -115,9 +117,9 @@ export default function Medications({ user, medications: initialMedications, adh
 
                 <div className="glass-card p-5 rounded-2xl flex items-center justify-between">
                     <div>
-                        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Streak Konsisten</span>
+                        <span className="text-xs text-slate-400 font-semibold tracking-wider">{t('medications.streak')}</span>
                         <div className="text-2xl font-black text-amber-400 mt-1">{streakDays} Hari</div>
-                        <p className="text-[11px] text-slate-400 mt-0.5">Berturut-turut tanpa tertinggal</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">{t('medications.streakText')}</p>
                     </div>
                     <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
                         <Flame className="w-6 h-6" />
@@ -126,9 +128,9 @@ export default function Medications({ user, medications: initialMedications, adh
 
                 <div className="glass-card p-5 rounded-2xl flex items-center justify-between">
                     <div>
-                        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Sync Caregiver</span>
-                        <div className="text-base font-bold text-teal-400 mt-1">Automatik Synced</div>
-                        <p className="text-[11px] text-slate-400 mt-0.5">Anak menerima notifikasi live</p>
+                        <span className="text-xs text-slate-400 font-semibold tracking-wider">{t('medications.caregiverSync')}</span>
+                        <div className="text-base font-bold text-teal-400 mt-1">{t('medications.synced')}</div>
+                        <p className="text-[11px] text-slate-400 mt-0.5">{t('medications.syncedText')}</p>
                     </div>
                     <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-400 flex items-center justify-center">
                         <UserCheck className="w-6 h-6" />
@@ -141,9 +143,9 @@ export default function Medications({ user, medications: initialMedications, adh
                 <div>
                     <h1 className="text-2xl font-black text-white flex items-center gap-2">
                         <Pill className="w-7 h-7 text-teal-400" />
-                        Senarai & Peringatan Ubat
+                        {t('medications.heading')}
                     </h1>
-                    <p className="text-xs text-slate-400">Pengurusan dos harian dan rekod stok bekalan ubat.</p>
+                    <p className="text-xs text-slate-400">{t('medications.subtitle')}</p>
                 </div>
 
                 <button
@@ -151,30 +153,30 @@ export default function Medications({ user, medications: initialMedications, adh
                     className="px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-teal-500/20 transition-all self-start sm:self-auto"
                 >
                     <Plus className="w-4 h-4" />
-                    Tambah Ubat Baharu
+                    {t('medications.add')}
                 </button>
             </div>
 
             {/* Time Filter Tabs */}
             <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
-                {['All', 'Morning', 'Afternoon', 'Night'].map((t) => (
+                {['All', 'Morning', 'Afternoon', 'Night'].map((slot) => (
                     <button
-                        key={t}
-                        onClick={() => setFilterTime(t)}
+                        key={slot}
+                        onClick={() => setFilterTime(slot)}
                         className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                            filterTime === t
+                            filterTime === slot
                                 ? 'bg-teal-500 text-slate-950 shadow-md'
                                 : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-700/60'
                         }`}
                     >
-                        {t === 'All' ? (
-                            'Semua Waktu'
-                        ) : t === 'Morning' ? (
-                            <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> Pagi</span>
-                        ) : t === 'Afternoon' ? (
-                            <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> Tengahari</span>
+                        {slot === 'All' ? (
+                            t('medications.all')
+                        ) : slot === 'Morning' ? (
+                            <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> {t('medications.morning')}</span>
+                        ) : slot === 'Afternoon' ? (
+                            <span className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> {t('medications.afternoon')}</span>
                         ) : (
-                            <span className="flex items-center gap-1.5"><Moon className="w-3.5 h-3.5 text-indigo-400" /> Malam</span>
+                            <span className="flex items-center gap-1.5"><Moon className="w-3.5 h-3.5 text-indigo-400" /> {t('medications.night')}</span>
                         )}
                     </button>
                 ))}
@@ -206,7 +208,7 @@ export default function Medications({ user, medications: initialMedications, adh
                                         type="button"
                                         onClick={() => handleDeleteMedication(med.id)}
                                         className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-slate-700/60 hover:border-rose-500/20 transition-all transition-colors cursor-pointer"
-                                        title="Padam Rekod Ubat"
+                                        title={t('medications.delete')}
                                     >
                                         <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -215,12 +217,12 @@ export default function Medications({ user, medications: initialMedications, adh
 
                             <p className="text-xs text-slate-300 mb-4 bg-slate-800/50 p-3 rounded-xl border border-slate-700/40 flex items-start gap-2">
                                 <Info className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
-                                <span><strong className="text-slate-200">Arahan:</strong> {med.instructions}</span>
+                                <span><strong className="text-slate-200">{t('medications.instruction')}:</strong> {med.instructions}</span>
                             </p>
 
                             {/* Pill Supply Status */}
                             <div className="flex items-center justify-between text-xs mb-4">
-                                <span className="text-slate-400">Baki Ubat Dalam Botol:</span>
+                                <span className="text-slate-400">{t('medications.remaining')}:</span>
                                 <span className={`font-bold font-mono flex items-center gap-1 ${med.pillsLeft <= med.refillThreshold ? 'text-rose-400' : 'text-slate-200'}`}>
                                     {med.pillsLeft} biji {med.pillsLeft <= med.refillThreshold && (
                                         <span className="flex items-center gap-1 text-[11px] font-bold text-rose-400 ml-1">
@@ -244,11 +246,11 @@ export default function Medications({ user, medications: initialMedications, adh
                             >
                                 {med.takenToday ? (
                                     <>
-                                        <Check className="w-4 h-4" /> Dimakan Hari Ini
+                                        <Check className="w-4 h-4" /> {t('medications.taken')}
                                     </>
                                 ) : (
                                     <>
-                                        <Clock className="w-4 h-4" /> Tanda Makan Sekarang
+                                        <Clock className="w-4 h-4" /> {t('medications.take')}
                                     </>
                                 )}
                             </button>
@@ -258,10 +260,10 @@ export default function Medications({ user, medications: initialMedications, adh
             </div>
 
             {/* Modal Add Medication */}
-            <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Tambah Rekod Ubat Baharu">
+            <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={t('medications.addTitle')}>
                 <form onSubmit={handleAddMedication} className="space-y-4">
                     <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">Nama Ubat / Generik</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('medications.name')}</label>
                         <input
                             type="text"
                             required
@@ -274,7 +276,7 @@ export default function Medications({ user, medications: initialMedications, adh
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Kategori Ubat</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('medications.category')}</label>
                             <input
                                 type="text"
                                 placeholder="Tekanan Darah / Kencing Manis"
@@ -284,7 +286,7 @@ export default function Medications({ user, medications: initialMedications, adh
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Dos (mg / tablet)</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('medications.dose')}</label>
                             <input
                                 type="text"
                                 placeholder="10mg / 1 Tablet"
@@ -297,19 +299,19 @@ export default function Medications({ user, medications: initialMedications, adh
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Waktu Makan</label>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('medications.time')}</label>
                             <select
                                 value={newMed.timeOfDay}
                                 onChange={e => setNewMed({...newMed, timeOfDay: e.target.value})}
                                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-teal-400"
                             >
-                                <option value="Morning">Pagi</option>
-                                <option value="Afternoon">Tengahari</option>
-                                <option value="Night">Malam</option>
+                                <option value="Morning">{t('medications.morning')}</option>
+                                <option value="Afternoon">{t('medications.afternoon')}</option>
+                                <option value="Night">{t('medications.night')}</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Masa Spesifik</label>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('medications.specificTime')}</label>
                             <input
                                 type="text"
                                 placeholder="08:00 AM"
@@ -321,7 +323,7 @@ export default function Medications({ user, medications: initialMedications, adh
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">Arahan Khas</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('medications.special')}</label>
                         <textarea
                             rows={2}
                             placeholder="Makan selepas makan / sebelum tidur"
@@ -337,14 +339,14 @@ export default function Medications({ user, medications: initialMedications, adh
                             onClick={() => setIsAddModalOpen(false)}
                             className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700"
                         >
-                            Batal
+                            {t('medications.cancel')}
                         </button>
                          <button
                             type="submit"
                             disabled={submitting}
                             className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 disabled:bg-teal-500/50 disabled:text-slate-700 text-slate-950 font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5"
                         >
-                            {submitting ? 'Menyimpan...' : 'Simpan Rekod Ubat'}
+                            {submitting ? 'Saving...' : t('medications.save')}
                         </button>
                     </div>
                 </form>

@@ -11,7 +11,7 @@ export default function EmergencyLayout({ children }) {
                         <HeartPulse className="w-6 h-6 animate-pulse" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-extrabold text-white">MediSync <span className="text-rose-400">ICE EMERGENCY</span></h1>
+                        <h1 className="text-xl font-extrabold text-white">MediSync <span className="text-rose-400">ICE Emergency</span></h1>
                         <p className="text-xs text-rose-300 font-medium">Limited-Access Emergency Medical Profile</p>
                     </div>
                 </div>

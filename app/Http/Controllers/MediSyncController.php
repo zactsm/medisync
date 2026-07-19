@@ -195,6 +195,10 @@ class MediSyncController extends Controller
 
     public function dashboard()
     {
+        if (!auth()->check()) {
+            return Inertia::render('Welcome');
+        }
+
         $user = $this->currentUser();
         $medications = $this->activeMedications($user);
         $appointments = $user->appointments()->where('starts_at', '>=', now())->orderBy('starts_at')->get();

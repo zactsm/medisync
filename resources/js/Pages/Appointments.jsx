@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import AppLayout from '../Layouts/AppLayout';
 import Badge from '../Components/Badge';
 import Modal from '../Components/Modal';
+import { useLanguage } from '../lib/language';
 import {
     Calendar as CalendarIcon,
     Plus,
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react';
 
 export default function Appointments({ user, appointments: initialAppointments }) {
+    const { t } = useLanguage();
     const [appts, setAppts] = useState(initialAppointments);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -39,7 +41,7 @@ export default function Appointments({ user, appointments: initialAppointments }
             const response = await fetch('/api/appointments', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content, 'Accept': 'application/json' }, body: JSON.stringify({ ...newAppt, starts_at: `${newAppt.date} ${newAppt.time}`, address: 'Alamat Klinik Pakar Hospital', documents_needed: ['Kad Temujanji', 'Kad Pengenalan'] }) });
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
-                alert('Gagal menambah temujanji: ' + (errData.message || 'Sila semak input anda.'));
+                alert(`${t('appointments.errorAdd')} ${errData.message || ''}`);
                 return;
             }
             const created = await response.json();
@@ -56,14 +58,14 @@ export default function Appointments({ user, appointments: initialAppointments }
             });
         } catch (error) {
             console.error('Network error adding appointment:', error);
-            alert('Ralat sambungan rangkaian semasa menambah temujanji.');
+            alert(t('appointments.network'));
         } finally {
             setSubmitting(false);
         }
     };
 
     const handleDeleteAppointment = async (id) => {
-        if (!confirm('Adakah anda pasti mahu memadam temujanji ini? / Are you sure you want to delete this appointment?')) return;
+        if (!confirm(t('appointments.deleteConfirm'))) return;
         try {
             const response = await fetch(`/api/appointments/${id}`, {
                 method: 'DELETE',
@@ -74,28 +76,28 @@ export default function Appointments({ user, appointments: initialAppointments }
                 }
             });
             if (!response.ok) {
-                alert('Gagal memadam temujanji.');
+                alert(t('appointments.errorDelete'));
                 return;
             }
             setAppts(prev => prev.filter(a => a.id !== id));
         } catch (error) {
             console.error('Error deleting appointment:', error);
-            alert('Ralat sambungan rangkaian semasa memadam temujanji.');
+            alert(t('appointments.network'));
         }
     };
 
     return (
         <AppLayout user={user}>
-            <Head title="Temujanji Hospital & Klinik" />
+            <Head title={t('appointments.title')} />
 
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-black text-white flex items-center gap-2">
                         <CalendarIcon className="w-7 h-7 text-indigo-400" />
-                        Peringatan Temujanji Hospital
+                        {t('appointments.heading')}
                     </h1>
-                    <p className="text-xs text-slate-400">Pakar kardiologi, endokrinologi, dan pemeriksaan kesihatan berkala.</p>
+                    <p className="text-xs text-slate-400">{t('appointments.subtitle')}</p>
                 </div>
 
                 <button
@@ -103,7 +105,7 @@ export default function Appointments({ user, appointments: initialAppointments }
                     className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-indigo-950/60 transition-all self-start sm:self-auto"
                 >
                     <Plus className="w-4 h-4" />
-                    Tambah Temujanji
+                    {t('appointments.add')}
                 </button>
             </div>
 
@@ -135,14 +137,14 @@ export default function Appointments({ user, appointments: initialAppointments }
                                 {appt.notes && (
                                     <p className="text-amber-300 flex items-start gap-2 pt-1 border-t border-slate-700/40">
                                         <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                                        <span><strong>Nota Penyediaan:</strong> {appt.notes}</span>
+                                        <span><strong>{t('appointments.preparation')}:</strong> {appt.notes}</span>
                                     </p>
                                 )}
                             </div>
 
                             {/* Documents Needed Checklist */}
                             <div>
-                                <span className="text-[11px] text-slate-400 uppercase tracking-wide font-semibold">Dokumen Perlu Dibawa:</span>
+                                <span className="text-[11px] text-slate-400 tracking-wide font-semibold">{t('appointments.documents')}:</span>
                                 <div className="flex flex-wrap gap-1.5 mt-1">
                                     {appt.documentsNeeded?.map((doc, idx) => (
                                         <span key={idx} className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 flex items-center gap-1">
@@ -166,7 +168,7 @@ export default function Appointments({ user, appointments: initialAppointments }
                             </button>
 
                             <div>
-                                <span className="text-xs uppercase font-bold text-indigo-400 tracking-wider">Tarikh & Masa</span>
+                                <span className="text-xs font-bold text-indigo-400 tracking-wider">{t('appointments.dateTime')}</span>
                                 <div className="text-2xl font-black text-white my-1">{appt.date}</div>
                                 <div className="text-sm font-bold text-slate-300 flex items-center justify-center gap-1">
                                     <Clock className="w-4 h-4 text-teal-400" />
@@ -190,10 +192,10 @@ export default function Appointments({ user, appointments: initialAppointments }
             </div>
 
             {/* Modal Add Appointment */}
-            <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Tambah Temujanji Hospital">
+            <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={t('appointments.add')}>
                 <form onSubmit={handleAddAppointment} className="space-y-4">
                     <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">Tajuk Temujanji / Tujuan</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('appointments.subject')}</label>
                         <input
                             type="text"
                             required
@@ -206,7 +208,7 @@ export default function Appointments({ user, appointments: initialAppointments }
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Nama Doktor Pakar</label>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('appointments.doctor')}</label>
                             <input
                                 type="text"
                                 required
@@ -217,7 +219,7 @@ export default function Appointments({ user, appointments: initialAppointments }
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Klinik / Jabatan</label>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('appointments.clinic')}</label>
                             <input
                                 type="text"
                                 placeholder="Klinik Kardiologi Level 3"
@@ -230,7 +232,7 @@ export default function Appointments({ user, appointments: initialAppointments }
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Tarikh</label>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('appointments.date')}</label>
                             <input
                                 type="date"
                                 required
@@ -240,7 +242,7 @@ export default function Appointments({ user, appointments: initialAppointments }
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Masa Masa Temujanji</label>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('appointments.time')}</label>
                             <input
                                 type="text"
                                 placeholder="10:30 AM"
@@ -252,7 +254,7 @@ export default function Appointments({ user, appointments: initialAppointments }
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">Nota Arahan Peringatan</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('appointments.notes')}</label>
                         <textarea
                             rows={2}
                             placeholder="Contoh: Perlu puasa 8 jam sebelum ujian darah"
@@ -268,14 +270,14 @@ export default function Appointments({ user, appointments: initialAppointments }
                             onClick={() => setIsAddModalOpen(false)}
                             className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700"
                         >
-                            Batal
+                            {t('appointments.cancel')}
                         </button>
                         <button
                             type="submit"
                             disabled={submitting}
                             className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:text-slate-200 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5"
                         >
-                            {submitting ? 'Menyimpan...' : 'Simpan Temujanji'}
+                            {submitting ? 'Saving...' : t('appointments.save')}
                         </button>
                     </div>
                 </form>

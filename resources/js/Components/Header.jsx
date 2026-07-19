@@ -1,39 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { supabase } from '../lib/supabase';
+import LanguageSelector from './LanguageSelector';
+import { useLanguage } from '../lib/language';
 import {
     Bell,
     ChevronDown,
-    FileText,
-    HeartPulse,
-    LayoutDashboard,
-    Menu,
     Moon,
-    Pill,
-    Settings,
-    ShieldAlert,
-    Stethoscope,
+    PanelLeftClose,
+    PanelLeftOpen,
     Sun,
-    Users,
-    X,
 } from 'lucide-react';
 
-const navigation = [
-    { name: 'Dashboard', malay: 'Papan utama', href: '/', icon: LayoutDashboard },
-    { name: 'Medications', malay: 'Ubat', href: '/medications', icon: Pill },
-    { name: 'Appointments', malay: 'Temujanji', href: '/appointments', icon: Stethoscope },
-    { name: 'Caregiver', malay: 'Penjaga', href: '/caregiver', icon: Users },
-    { name: 'Documents', malay: 'Dokumen', href: '/documents', icon: FileText },
-    { name: 'Health tools', malay: 'Alat kesihatan', href: '/symptom-summariser', icon: HeartPulse },
-    { name: 'Emergency', malay: 'Kecemasan', href: '/ice', icon: ShieldAlert },
-];
-
-export default function Header({ user }) {
+export default function Header({ user, sidebarCollapsed, onToggleSidebar, onOpenSidebar }) {
     const { props } = usePage();
     const notifications = props.notifications || [];
-    const { url } = usePage();
-    const [mobileNavOpen, setMobileNavOpen] = useState(false);
+    const { t } = useLanguage();
     const [activePanel, setActivePanel] = useState(null);
+    const [isSigningOut, setIsSigningOut] = useState(false);
     const [theme, setTheme] = useState(() => {
         if (typeof window === 'undefined') return 'light';
         try {
@@ -52,7 +36,6 @@ export default function Header({ user }) {
         }
     }, [theme]);
 
-    const isActive = (href) => href === '/' ? url === '/' : url.startsWith(href);
     const initials = (user?.name || 'MediSync')
         .split(' ')
         .filter(Boolean)
@@ -63,69 +46,68 @@ export default function Header({ user }) {
 
     const togglePanel = (panel) => setActivePanel((current) => current === panel ? null : panel);
 
-    return (
-        <header className="premium-header sticky top-0 z-40 border-b border-ink/8 bg-canvas/85 px-4 backdrop-blur-xl sm:px-6 lg:px-10">
-            <div className="mx-auto flex min-h-[84px] w-full max-w-[1540px] items-center gap-4">
-                <Link href="/" className="brand-mark shrink-0" aria-label="MediSync home">
-                    <span className="brand-icon"><HeartPulse className="h-4 w-4" /></span>
-                    <span className="brand-wordmark">Medi<span>Sync</span></span>
-                </Link>
+    const handleSidebarControl = () => {
+        if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+            onOpenSidebar?.();
+            return;
+        }
 
-                <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 xl:flex" aria-label="Primary navigation">
-                    {navigation.map((item) => {
-                        const active = isActive(item.href);
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`nav-pill ${active ? 'nav-pill-active' : ''}`}
-                                aria-current={active ? 'page' : undefined}
-                            >
-                                <span>{item.name}</span>
-                                <small>{item.malay}</small>
-                            </Link>
-                        );
-                    })}
-                </nav>
+        onToggleSidebar?.();
+    };
+
+    const handleSignOut = async () => {
+        if (isSigningOut) return;
+
+        setIsSigningOut(true);
+        try {
+            await supabase?.auth.signOut();
+            const response = await fetch('/logout', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content },
+            });
+
+            if (!response.ok) throw new Error(`Logout failed with status ${response.status}`);
+            window.location.href = '/login';
+        } catch (error) {
+            console.error('Sign out failed:', error);
+            setIsSigningOut(false);
+        }
+    };
+
+    return (
+        <header className="premium-header sticky top-0 z-30 border-b border-ink/8 bg-canvas/85 px-4 backdrop-blur-xl sm:px-6 lg:px-10">
+            <div className="header-inner mx-auto flex min-h-[72px] w-full max-w-[1540px] items-center gap-3">
+                <button
+                    type="button"
+                    className="sidebar-toggle-button"
+                    onClick={handleSidebarControl}
+                    aria-label={sidebarCollapsed ? t('header.expandSidebar') : t('header.collapseSidebar')}
+                    aria-expanded={!sidebarCollapsed}
+                    title={sidebarCollapsed ? t('header.expandSidebar') : t('header.collapseSidebar')}
+                >
+                    {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+                </button>
 
                 <div className="ml-auto flex items-center gap-2">
+                    <LanguageSelector />
                     <button
                         type="button"
                         onClick={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')}
                         className="theme-button"
-                        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                        aria-label={theme === 'dark' ? t('header.lightMode') : t('header.darkMode')}
                         aria-pressed={theme === 'dark'}
-                        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                        title={theme === 'dark' ? t('header.lightMode') : t('header.darkMode')}
                     >
                         {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                     </button>
-
-                    <div className="relative hidden sm:block">
-                        <button
-                            type="button"
-                            onClick={() => togglePanel('settings')}
-                            className="utility-button"
-                            aria-label="Open settings"
-                            aria-expanded={activePanel === 'settings'}
-                        >
-                            <Settings className="h-4 w-4" />
-                            <span className="hidden 2xl:inline">Settings</span>
-                        </button>
-                        {activePanel === 'settings' && (
-                            <div className="utility-popover right-0 w-64">
-                                <p className="popover-kicker">Preferences / Keutamaan</p>
-                                <div className="popover-row"><span>Premium canvas</span><span className="status-dot" /></div>
-                                <div className="popover-row"><span>Notifications</span><span className="text-xs text-ink/45">On</span></div>
-                            </div>
-                        )}
-                    </div>
 
                     <div className="relative">
                         <button
                             type="button"
                             onClick={() => togglePanel('notifications')}
                             className="icon-button"
-                            aria-label="Open notifications"
+                            aria-label={t('header.notifications')}
                             aria-expanded={activePanel === 'notifications'}
                         >
                             <Bell className="h-4 w-4" />
@@ -133,8 +115,8 @@ export default function Header({ user }) {
                         </button>
                         {activePanel === 'notifications' && (
                             <div className="utility-popover right-0 w-72">
-                                <p className="popover-kicker">Notifications / Pemberitahuan</p>
-                                {notifications.length ? notifications.map((item) => <div key={item.id} className="border-b border-ink/10 py-2 last:border-0"><p className="text-sm font-semibold text-ink">{item.title}</p><p className="mt-1 text-xs leading-5 text-ink/55">{item.body}</p><p className="mt-1 text-[10px] text-ink/40">{item.createdAt}</p></div>) : <p className="text-sm text-ink/55">No notifications yet.</p>}
+                                <p className="popover-kicker">{t('header.notifications')}</p>
+                                {notifications.length ? notifications.map((item) => <div key={item.id} className="border-b border-ink/10 py-2 last:border-0"><p className="text-sm font-semibold text-ink">{item.title}</p><p className="mt-1 text-xs leading-5 text-ink/55">{item.body}</p><p className="mt-1 text-[10px] text-ink/40">{item.createdAt}</p></div>) : <p className="text-sm text-ink/55">{t('header.noNotifications')}</p>}
                             </div>
                         )}
                     </div>
@@ -144,7 +126,7 @@ export default function Header({ user }) {
                             type="button"
                             onClick={() => togglePanel('profile')}
                             className="profile-button"
-                            aria-label="Open profile menu"
+                            aria-label={t('header.profile')}
                             aria-expanded={activePanel === 'profile'}
                         >
                             <span className="avatar avatar-small">{initials}</span>
@@ -152,47 +134,24 @@ export default function Header({ user }) {
                         </button>
                         {activePanel === 'profile' && (
                             <div className="utility-popover right-0 w-60">
-                                <p className="popover-kicker">Profile / Profil</p>
+                                <p className="popover-kicker">{t('header.profile')}</p>
                                 <p className="text-sm font-semibold text-ink">{user?.name || 'MediSync patient'}</p>
                                 <p className="mt-1 text-xs text-ink/55">{user?.role || 'Patient'} · {user?.blood_type || 'O+'}</p>
-                                <Link href="/ice" className="popover-action mt-4">View emergency profile <span>→</span></Link>
-                                <button type="button" onClick={async () => { await supabase?.auth.signOut(); await fetch('/logout', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content } }); window.location.href = '/login'; }} className="mt-3 w-full rounded-lg border border-red-200 px-3 py-2 text-left text-xs font-bold text-red-600">Sign out</button>
+                                <Link href="/ice" className="popover-action mt-4">{t('header.viewEmergency')} <span>→</span></Link>
+                                <button
+                                    type="button"
+                                    onClick={handleSignOut}
+                                    className="profile-menu-action profile-signout"
+                                    disabled={isSigningOut}
+                                    aria-busy={isSigningOut}
+                                >
+                                    {isSigningOut ? t('header.signingOut') : t('header.signOut')}
+                                </button>
                             </div>
                         )}
                     </div>
-
-                    <button
-                        type="button"
-                        onClick={() => setMobileNavOpen((open) => !open)}
-                        className="icon-button xl:hidden"
-                        aria-label={mobileNavOpen ? 'Close navigation' : 'Open navigation'}
-                        aria-expanded={mobileNavOpen}
-                    >
-                        {mobileNavOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                    </button>
                 </div>
             </div>
-
-            {mobileNavOpen && (
-                <nav className="mobile-nav xl:hidden" aria-label="Mobile navigation">
-                    {navigation.map((item) => {
-                        const active = isActive(item.href);
-                        const Icon = item.icon;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={() => setMobileNavOpen(false)}
-                                className={`mobile-nav-link ${active ? 'mobile-nav-link-active' : ''}`}
-                            >
-                                <Icon className="h-4 w-4" />
-                                <span>{item.name}</span>
-                                <small>{item.malay}</small>
-                            </Link>
-                        );
-                    })}
-                </nav>
-            )}
         </header>
     );
 }

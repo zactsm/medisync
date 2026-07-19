@@ -16,17 +16,17 @@ import {
 export default function PublicICE({ code, emergencyData }) {
     return (
         <EmergencyLayout>
-            <Head title={`KECEMASAN ICE - ${emergencyData.name}`} />
+            <Head title={`Kecemasan ICE - ${emergencyData.name}`} />
 
             {/* Top Red Emergency Notice */}
             <div className="mb-6 p-4 rounded-2xl bg-rose-950/90 border border-rose-500 text-center glow-red">
-                <div className="flex items-center justify-center gap-2 text-rose-400 font-extrabold text-xs uppercase tracking-wider mb-1">
+                <div className="flex items-center justify-center gap-2 text-rose-400 font-extrabold text-xs tracking-wider mb-1">
                     <ShieldAlert className="w-5 h-5 animate-pulse" />
-                    MAKLUMAT PERUBATAN KECEMASAN (ICE PROFILE)
+                    Maklumat Perubatan Kecemasan (ICE Profile)
                 </div>
                 <h2 className="text-2xl font-black text-white">{emergencyData.name}</h2>
                 <p className="text-xs text-rose-200 mt-0.5 font-medium">
-                    Umur: {emergencyData.age} Tahun • Kumpulan Darah: <strong className="text-white font-mono bg-rose-900 px-2 py-0.5 rounded text-sm">{emergencyData.blood_type}</strong> • Penderma Organ: {emergencyData.organ_donor ? 'BERIKRAR' : 'TIDAK'}
+                    Umur: {emergencyData.age} Tahun • Kumpulan Darah: <strong className="text-white font-mono bg-rose-900 px-2 py-0.5 rounded text-sm">{emergencyData.blood_type}</strong> • Penderma Organ: {emergencyData.organ_donor ? 'Berikrar' : 'Tidak'}
                 </p>
             </div>
 
@@ -41,12 +41,12 @@ export default function PublicICE({ code, emergencyData }) {
                             <PhoneCall className="w-5 h-5 text-white animate-bounce" />
                         </div>
                         <div>
-                            <span className="text-[10px] uppercase font-bold text-rose-200">HUBUNGI WARIS UTAMA</span>
+                            <span className="text-[10px] font-bold text-rose-200">Hubungi Waris Utama</span>
                             <div className="text-base font-black">{emergencyData.emergencyContactName}</div>
                         </div>
                     </div>
                     <span className="text-xs font-mono bg-rose-900 px-3 py-1.5 rounded-lg border border-rose-400/40">
-                        PANGGIL SEKARANG
+                        Panggil Sekarang
                     </span>
                 </a>
 
@@ -59,7 +59,7 @@ export default function PublicICE({ code, emergencyData }) {
                             <PhoneCall className="w-5 h-5 text-teal-400" />
                         </div>
                         <div>
-                            <span className="text-[10px] uppercase font-bold text-slate-400">WARIS KEDUA</span>
+                            <span className="text-[10px] font-bold text-slate-400">Waris Kedua</span>
                             <div className="text-sm font-bold text-white">{emergencyData.secondaryContactName}</div>
                         </div>
                     </div>
@@ -71,11 +71,11 @@ export default function PublicICE({ code, emergencyData }) {
 
             {/* Life-Saving Medical Data Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {/* STRICT ALLERGY WARNING CARD */}
+                {/* Strict Allergy Warning Card */}
                 <div className="glass-card p-6 rounded-2xl border-rose-500/50 bg-slate-900/90">
-                    <h3 className="text-sm font-extrabold text-rose-400 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-rose-500/30 pb-3">
+                    <h3 className="text-sm font-extrabold text-rose-400 tracking-wider mb-4 flex items-center gap-2 border-b border-rose-500/30 pb-3">
                         <AlertTriangle className="w-5 h-5 text-rose-500" />
-                        AMARAN ALAHAN STRUKTUR (STRICT ALLERGIES)
+                        Amaran Alahan Struktur (Strict Allergies)
                     </h3>
 
                     <div className="space-y-2">
@@ -87,10 +87,10 @@ export default function PublicICE({ code, emergencyData }) {
                     </div>
                 </div>
 
-                {/* CRITICAL MEDICAL CONDITIONS & MEDICATIONS */}
+                {/* Critical Medical Conditions And Medications */}
                 <div className="glass-card p-6 rounded-2xl border-slate-700/80 bg-slate-900/90 space-y-4">
                     <div>
-                        <h3 className="text-sm font-extrabold text-teal-400 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-slate-800 pb-3">
+                        <h3 className="text-sm font-extrabold text-teal-400 tracking-wider mb-3 flex items-center gap-2 border-b border-slate-800 pb-3">
                             <HeartPulse className="w-5 h-5 text-teal-400" />
                             Penyakit Kronik & Sejarah Perubatan
                         </h3>
@@ -104,7 +104,7 @@ export default function PublicICE({ code, emergencyData }) {
                     </div>
 
                     <div className="pt-2">
-                        <h4 className="text-xs uppercase font-bold text-slate-400 mb-2 flex items-center gap-1.5">
+                        <h4 className="text-xs font-bold text-slate-400 mb-2 flex items-center gap-1.5">
                             <Pill className="w-4 h-4 text-teal-400" /> Ubat Aktif Yang Sedang Diambil:
                         </h4>
                         <div className="space-y-1.5">

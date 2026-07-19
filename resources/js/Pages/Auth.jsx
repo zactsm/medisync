@@ -54,7 +54,7 @@ export default function Auth({ patients = [], caregivers = [] }) {
                                 Medi<span className="text-yellow-600">Sync</span>
                             </span>
                         </div>
-                        <p className="text-[10px] md:text-xs text-ink/50 font-bold tracking-widest uppercase mt-1">
+                        <p className="text-[10px] md:text-xs text-ink/50 font-bold tracking-widest mt-1">
                             Sistem Pengurusan Kesihatan Pintar Keluarga
                         </p>
                         <div className="w-12 h-1 bg-saffron mx-auto mt-4 rounded-full shadow-sm" />
@@ -143,7 +143,7 @@ export default function Auth({ patients = [], caregivers = [] }) {
                     )}
 
                     {/* Footer */}
-                    <div className="text-center text-[10px] text-ink/40 font-bold uppercase tracking-widest mt-8 border-t border-ink/8 pt-4">
+                    <div className="text-center text-[10px] text-ink/40 font-bold tracking-widest mt-8 border-t border-ink/8 pt-4">
                         MediSync • Pilihan Pintar Penjagaan Kesihatan
                     </div>
                 </div>

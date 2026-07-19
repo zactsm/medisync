@@ -1,10 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl' }) {
     const dialogRef = useRef(null);
     const closeButtonRef = useRef(null);
     const onCloseRef = useRef(onClose);
+    const titleId = useId();
 
     useEffect(() => {
         onCloseRef.current = onClose;
@@ -52,34 +54,37 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
 
     if (!isOpen) return null;
 
-    return (
+    if (typeof document === 'undefined') return null;
+
+    return createPortal(
         <div
-            className="premium-modal-backdrop fixed inset-0 z-50 overflow-y-auto overscroll-contain p-2 sm:p-4"
+            className="premium-modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain p-2 sm:p-4"
             onMouseDown={(event) => event.target === event.currentTarget && onCloseRef.current()}
         >
             <div
                 ref={dialogRef}
-                className={`premium-modal relative mx-auto my-2 flex w-full ${maxWidth} flex-col overflow-hidden rounded-2xl sm:my-6`}
+                className={`premium-modal standard-surface relative flex w-full ${maxWidth} flex-col overflow-hidden rounded-2xl`}
                 role="dialog"
                 aria-modal="true"
-                aria-labelledby="medisync-modal-title"
+                aria-labelledby={titleId}
             >
                 <div className="premium-modal-header flex items-center justify-between pb-4">
-                    <h3 id="medisync-modal-title" className="premium-modal-title text-xl font-bold">{title}</h3>
+                    <h3 id={titleId} className="premium-modal-title text-xl font-bold">{title}</h3>
                     <button
                         ref={closeButtonRef}
                         type="button"
                         onClick={() => onCloseRef.current()}
-                        className="premium-modal-close p-1.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        className="premium-modal-close rounded-lg p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500"
                         aria-label="Close dialog"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="h-5 w-5" />
                     </button>
                 </div>
-                <div className="premium-modal-body py-4 overflow-y-auto flex-1">
+                <div className="premium-modal-body flex-1 overflow-y-auto py-4">
                     {children}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 }
