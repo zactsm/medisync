@@ -32,6 +32,10 @@ class StoreMedicationRequest extends FormRequest
         if ($this->has('pillsLeft') && !$this->has('pills_left')) {
             $this->merge(['pills_left' => $this->integer('pillsLeft')]);
         }
+
+        if ($this->has('expiryDate') && !$this->has('expiry_date')) {
+            $this->merge(['expiry_date' => $this->input('expiryDate')]);
+        }
     }
 
     public function rules(): array
@@ -46,6 +50,7 @@ class StoreMedicationRequest extends FormRequest
             'time'         => ['nullable', 'date_format:H:i'],
             'pills_left'   => ['nullable', 'integer', 'min:0'],
             'doctor'       => ['nullable', 'string', 'max:120'],
+            'expiry_date'  => ['nullable', 'date'],
         ];
     }
 

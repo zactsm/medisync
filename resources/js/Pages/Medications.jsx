@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 
 export default function Medications({ user, medications: initialMedications, adherenceRate, streakDays }) {
-    const { t } = useLanguage();
+    const { language, t } = useLanguage();
     const [meds, setMeds] = useState(initialMedications);
     const [filterTime, setFilterTime] = useState('All');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -35,7 +35,9 @@ export default function Medications({ user, medications: initialMedications, adh
         instructions: 'Take after meal',
         timeOfDay: 'Morning',
         time: '08:00 AM',
-        pillsLeft: 30
+        pillsLeft: 30,
+        doctor: '',
+        expiryDate: ''
     });
 
     const toggleTaken = async (id) => {
@@ -66,7 +68,9 @@ export default function Medications({ user, medications: initialMedications, adh
                 instructions: 'Take after meal',
                 timeOfDay: 'Morning',
                 time: '08:00 AM',
-                pillsLeft: 30
+                pillsLeft: 30,
+                doctor: '',
+                expiryDate: ''
             });
         } catch (error) {
             console.error('Network error adding medication:', error);
@@ -221,7 +225,7 @@ export default function Medications({ user, medications: initialMedications, adh
                             </p>
 
                             {/* Pill Supply Status */}
-                            <div className="flex items-center justify-between text-xs mb-4">
+                            <div className="flex items-center justify-between text-xs mb-2">
                                 <span className="text-slate-400">{t('medications.remaining')}:</span>
                                 <span className={`font-bold font-mono flex items-center gap-1 ${med.pillsLeft <= med.refillThreshold ? 'text-rose-400' : 'text-slate-200'}`}>
                                     {med.pillsLeft} biji {med.pillsLeft <= med.refillThreshold && (
@@ -231,6 +235,17 @@ export default function Medications({ user, medications: initialMedications, adh
                                     )}
                                 </span>
                             </div>
+
+                            {/* Expiry Date Status */}
+                            {med.expiryDate && (
+                                <div className="flex items-center justify-between text-xs mb-4">
+                                    <span className="text-slate-400">{language === 'ms' ? 'Tarikh Luput:' : 'Expiry Date:'}</span>
+                                    <span className="font-bold font-mono text-slate-200 flex items-center gap-1.5">
+                                        <Calendar className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                                        {med.expiryDate}
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Action Button */}
@@ -331,6 +346,28 @@ export default function Medications({ user, medications: initialMedications, adh
                             onChange={e => setNewMed({...newMed, instructions: e.target.value})}
                             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-teal-400"
                         />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{language === 'ms' ? 'Doktor / Pakar' : 'Doctor / Specialist'}</label>
+                            <input
+                                type="text"
+                                placeholder="Dr. Sarah"
+                                value={newMed.doctor}
+                                onChange={e => setNewMed({...newMed, doctor: e.target.value})}
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-teal-400"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-300 mb-1">{language === 'ms' ? 'Tarikh Luput' : 'Expiry Date'}</label>
+                            <input
+                                type="date"
+                                value={newMed.expiryDate}
+                                onChange={e => setNewMed({...newMed, expiryDate: e.target.value})}
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-teal-400"
+                            />
+                        </div>
                     </div>
 
                     <div className="modal-actions pt-3 border-t border-slate-700 flex justify-end gap-3">

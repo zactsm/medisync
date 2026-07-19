@@ -21,12 +21,14 @@ class Medication extends Model
         'refill_threshold',
         'doctor',
         'active',
+        'expiry_date',
     ];
 
     protected $casts = [
         'active'           => 'boolean',
         'refill_threshold' => 'integer',
         'pills_left'       => 'integer',
+        'expiry_date'      => 'date:Y-m-d',
     ];
 
     // -----------------------------------------------------------------

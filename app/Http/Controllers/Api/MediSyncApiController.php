@@ -122,6 +122,7 @@ class MediSyncApiController extends Controller
             'takenToday'     => $takenToday,
             'taken'          => $takenToday,
             'doctor'         => $medication->doctor,
+            'expiryDate'     => $medication->expiry_date?->format('Y-m-d'),
         ];
     }
 
@@ -345,9 +346,9 @@ class MediSyncApiController extends Controller
         $data    = $request->validated();
         $patient = $this->resolvePatient($request);
 
-        // blood_type and organ_donor live on the User, not MedicalProfile
-        $userFields    = array_intersect_key($data, array_flip(['blood_type', 'organ_donor']));
-        $profileFields = array_diff_key($data, array_flip(['blood_type', 'organ_donor']));
+        // name, blood_type and organ_donor live on the User, not MedicalProfile
+        $userFields    = array_intersect_key($data, array_flip(['name', 'blood_type', 'organ_donor']));
+        $profileFields = array_diff_key($data, array_flip(['name', 'blood_type', 'organ_donor']));
 
         if (!empty($userFields)) {
             $patient->update($userFields);

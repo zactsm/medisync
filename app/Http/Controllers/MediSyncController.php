@@ -30,10 +30,12 @@ class MediSyncController extends Controller
         return [
             'id' => $user->id,
             'name' => $user->name,
+            'email' => $user->email,
             'role' => ucfirst((string) ($user->role ?: 'patient')),
             'age' => $user->date_of_birth?->age,
             'blood_type' => $user->blood_type,
             'ice_code' => $user->ice_code,
+            'caregiver_sync_code' => $user->caregiver_sync_code,
         ];
     }
 
@@ -82,6 +84,7 @@ class MediSyncController extends Controller
             'takenToday' => $medication->logs->contains(fn (MedicationLog $log) => $log->taken_on?->isToday()),
             'taken' => $medication->logs->contains(fn (MedicationLog $log) => $log->taken_on?->isToday()),
             'doctor' => $medication->doctor,
+            'expiryDate' => $medication->expiry_date?->format('Y-m-d'),
         ];
     }
 

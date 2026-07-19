@@ -14,6 +14,7 @@ class UpdateMedicalProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name'               => ['required', 'string', 'max:120'],
             'blood_type'         => ['nullable', 'string', 'max:10'],
             'organ_donor'        => ['boolean'],
             'weight_kg'          => ['nullable', 'integer', 'min:1', 'max:500'],
