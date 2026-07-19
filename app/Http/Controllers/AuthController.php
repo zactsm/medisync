@@ -51,7 +51,7 @@ class AuthController extends Controller
             'name' => $remote['user_metadata']['full_name'] ?? $remote['user_metadata']['name'] ?? 'MediSync User',
             'phone' => $remote['phone'] ?? null,
             'password' => Hash::make(Str::random(48)),
-            'role' => 'patient',
+            'role' => $remote['user_metadata']['role'] ?? 'patient',
             'ice_code' => 'ICE-'.strtoupper(Str::random(8)),
             'caregiver_sync_code' => 'MS-'.strtoupper(Str::random(8))
         ]);
